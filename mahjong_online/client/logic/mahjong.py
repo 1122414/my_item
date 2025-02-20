@@ -7,11 +7,14 @@ class MahjongTile:
         self.suit = suit  # 万/筒/条/字
         self.value = value
     
-    def get_id(self):
-        """生成唯一牌标识"""
-        if self.suit == '字':
-            return f"{self.value}"
-        return f"{self.value}{self.suit}"
+    def __repr__(self):
+        return f"{self.value}{self.suit.value if self.suit != Suit.HONORS else ''}"
+    
+    #1. def get_id(self):
+    #     """生成唯一牌标识"""
+    #     if self.suit == '字':
+    #         return f"{self.value}"
+    #     return f"{self.value}{self.suit}"
 
 class Wall:
     def __init__(self):
@@ -19,6 +22,12 @@ class Wall:
     
     def _generate_wall(self):
         tiles = []
+        # for suit in Suit:
+        #     if suit == Suit.HONORS:
+        #         for h in ['东','南','西','北','中','发','白']:
+        #             tiles += [MahjongTile(suit, h) for _ in range(4)]
+        #     else:
+        #         for n in range
         # 生成数牌（万/筒/条）
         for suit in ['万', '筒', '条']:
             for num in range(1, 10):
