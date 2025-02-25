@@ -1,0 +1,1428 @@
+#back_top{
+    position: fixed;
+    left: 85%;
+    top: 80%;
+    display: block;
+    background-color: #c81623;
+    width: 80px;
+    height: 80px;
+    font-size: 16px;
+    line-height: 80px;
+    text-align: center;
+    color: #ffffff;
+    border-radius: 40px;
+}
+
+#back_top:hover{
+    color: black!important;
+}
+
+.main {
+    height: 512px;
+    margin-top: 24px;
+    background-color: #ffffff;
+}
+
+.main .main_left {
+    width: 210px;
+    height: 100%;
+    float: left;
+    background-color: #c81623;
+}
+
+.main .main_left .main_left_top {
+    height: 45px;
+    color: #ffffff;
+    font-size: 16px;
+    background-color: #b1191a;
+    text-align: center;
+    line-height: 45px;
+}
+
+.main .main_left ul {
+    position: relative;
+    margin-top: 9px;
+}
+
+.main .main_left ul li {
+
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
+/* 副导航分类详情样式 */
+/* 鼠标经过滑出详情分类 */
+
+.main .main_left ul li .eputy_nav_comm {
+    position: absolute;
+    top: 0px;
+    left: 220px;
+    float: left;
+    width: 721px;
+    height: 465px;
+    background-color: #fff;
+    display: none;
+}
+
+.main .main_left ul li:hover .eputy_nav_comm {
+    z-index: 999;
+    display: block;
+}
+
+.main .main_left ul li .eputy_nav_comm ul {
+    margin-left: 20px;
+}
+
+.main .main_left ul li .eputy_nav_comm li {
+    float: left;
+    width: auto;
+    height: 25px;
+    margin-right: 8px;
+    background-color: #7c7171;
+}
+
+.main .main_left ul li .eputy_nav_comm li a {
+    display: inline-block;
+    color: #fff;
+    margin: 2px 6px 2px 6px;
+}
+
+.main .main_left ul li .eputy_nav_comm li span {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    background-color: #5c5251;
+    color: #ffffff;
+    text-align: center;
+    line-height: 25px;
+}
+
+.main .main_left ul li:hover .eputy_nav_comm .classify {
+    margin-top: 16px;
+}
+
+.main .main_left ul li:hover .eputy_nav_comm dl {
+    margin-top: 16px;
+}
+
+.main .main_left ul li:hover .eputy_nav_comm dl dt {
+    float: left;
+    font-size: 12px;
+    margin-left: 64px;
+    font-weight: 700;
+}
+
+.main .main_left ul li:hover .eputy_nav_comm dl dd {
+    float: left;
+    margin-left: 8px;
+}
+
+.main .main_left ul li:hover .eputy_nav_comm dl dd a {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 12px;
+    color: #333333;
+}
+
+.main .main_left ul li a {
+    color: #fff;
+    font-size: 14px;
+}
+
+.main .main_left ul li a span {
+    float: right;
+    margin-right: 4px;
+}
+
+/* 经过li 背景变白 */
+.main .main_left ul li:hover {
+    background-color: #fff;
+}
+
+/* 鼠标经过li时 a变红 */
+.main .main_left ul li:hover a {
+    color: red;
+}
+
+.main_nav {
+    float: left;
+    width: 730px;
+    height: 45px;
+}
+
+.main_nav ul li {
+
+    float: left;
+    font-size: 16px;
+    text-align: center;
+    line-height: 45px;
+    margin-left: 42px;
+    color: #333333;
+}
+
+.carousel {
+    position: relative;
+    top: -10px;
+    left: -10px;
+}
+
+.main .main_body_img {
+    background-color: red;
+    height: 456px;
+    width: 720px;
+    float: left;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+
+
+/* .main .main_body_img{
+    background-color: red;
+    height: 456px;
+    width: 720px;
+    float: left;
+    margin-top: 10px;
+    margin-left: 10px;
+} */
+
+.main_right_box_top {
+    float: right;
+    width: 251px;
+    height: 168px;
+    font-size: 14px;
+    margin-top: 10px;
+    border: 1px solid #e4e4e4;
+}
+
+.main_right_box_top .news {
+    height: 34px;
+    margin-top: 12px;
+    margin-left: 16px;
+    border-bottom: dotted;
+    border-bottom: #e8e8e7;
+}
+
+.main_right_box_top .news span {
+    color: #333333;
+}
+
+.main_right_box_top .news a span {
+    float: right;
+    margin-right: 12px;
+}
+
+.main_right_box_top .news_title {
+    color: #666666;
+}
+
+.main_right_box_top .news_title p {
+    margin-top: -5px;
+}
+
+.main_right_box_top .news_title span {
+    font-weight: 700;
+}
+
+.main_right_box_center {
+    float: right;
+    width: 251px;
+    height: 212px;
+    border: 1px solid #e8e8e7;
+}
+
+.main_right_box_center ul li {
+    float: left;
+    width: 62.1px;
+    height: 70px;
+    border: .5px solid #e8e8e7;
+    font-size: 14px;
+    position: relative;
+}
+
+.main_right_box_center ul li img {
+    position: absolute;
+    top: 20px;
+    left: 18px;
+}
+
+.main_right_box_center ul li a span {
+    position: absolute;
+    top: 40px;
+    left: 15px;
+    color: #666666;
+}
+
+.main_right_box_center ul li a .word3 {
+    position: absolute;
+    top: 40px;
+    left: 9px;
+}
+
+.main_right_box_bottom {
+    float: right;
+}
+
+/* 左边定位栏 */
+.left_little_list {
+    float: left;
+    width: 67px;
+    position: fixed;
+    top: 30%;
+    left: 14%;
+}
+
+/* #box{float:left; position:relative;width:250px;}
+.div1{width:250px;}
+.div2{position:fixed;_position:absolute;top:0;z-index:250;} */
+
+.left_little_list ul li {
+    font-size: 16px;
+    width: 67px;
+    height: 32px;
+    text-align: center;
+    line-height: 32px;
+    border-bottom: 2px solid #ededed;
+}
+
+.left_little_list ul li:visited {
+    background-color: #c81623;
+}
+
+.left_little_list ul li a {
+    display: inline-block;
+    color: #666666;
+    font-size: 12px;
+}
+
+/* 分类详情栏 */
+
+.commodity_classify {
+    margin-top: 20px;
+}
+
+.commodity_classify hr{
+    position: absolute;
+    height: 3px;
+    background-color: red;
+    border: none;
+}
+
+.commodity_classify ul li {
+    height: 510px;
+}
+
+.commodity_classify table{
+    width: 120px!important;
+    text-align: center!important;
+}
+
+.commodity_classify ul .recommend {
+    height: 160px;
+    margin-bottom: -10px;
+}
+
+.commodity_classify ul .recommend .recm {
+    float: left;
+    position: relative;
+    width: 206px;
+    height: 160px;
+    background-color: #5c5251;
+}
+
+.commodity_classify .recommend .recm img {
+    float: left;
+    position: absolute;
+    top: 32px;
+    left: 61px;
+}
+
+.commodity_classify .recommend .recm1 {
+    float: left;
+}
+
+.commodity_classify .guess_like{
+    height: 272px;
+}
+
+.commodity_classify .guess_like p{
+    font-size: 20px;
+}
+
+.commodity_classify .guess_like .glike,
+.commodity_classify .guess_like .glike1{
+    margin-top: 10px;
+    font-size: 115px;
+    text-align: center;
+    float: left;
+    width: 200px;
+    height: 224px;
+    border: 1px solid grey;
+}
+
+.commodity_classify .guess_like .glike1{
+    font-size: 130px;
+}
+
+.commodity_classify.interesting{
+    position: relative;
+    height: 272px;
+}
+
+.commodity_classify .interesting p{
+    font-size: 20px;
+}
+
+.commodity_classify .interesting .good_thing{
+    background-color: rgba(211, 205, 205, 0.142);
+    font-size: 20px;
+    text-align: center;
+    line-height: 75px;
+    position: relative;
+    top: -405px;
+    left: 410px;
+    width: 220px;
+    height: 75px;
+}
+
+.commodity_classify .interesting .pin_pai{
+    background-color: rgba(211, 205, 205, 0.142);
+    font-size: 20px;
+    text-align: center;
+    line-height: 75px;
+    position: relative;
+    top: -790px;
+    left: 650px;
+    width: 370px;
+    height: 75px;
+}
+
+.commodity_classify .interesting .intst2{
+    position: relative;
+    top: -405px;
+    left: 410px;
+}
+.commodity_classify .interesting .intst3{
+    position: relative;
+    top: -388px;
+    left: 410px;
+}
+.commodity_classify .interesting .intst4{
+    position: relative;
+    top: -788px;
+    left: 677px;
+    transform: scale(1.05);
+}
+.commodity_classify .interesting .intst5{
+    position: relative;
+    top: -752px;
+    left: 645px;
+}
+.commodity_classify .interesting .intst6{
+    position: relative;
+    top: -888px;
+    left: 837px;
+}
+
+
+.commodity_classify .interesting .intst11{
+    position: relative;
+    top: -1293px;
+    left: 1032px;
+}
+.commodity_classify .interesting .intst12{
+    position: relative;
+    top: -1353px;
+    left: 1120px;
+}
+.commodity_classify .interesting .intst21{
+    position: relative;
+    top: -1358px;
+    left: 1032px;
+}
+.commodity_classify .interesting .intst22{
+    position: relative;
+    top: -1418px;
+    left: 1120px;
+}
+.commodity_classify .interesting .intst31{
+    position: relative;
+    top: -1428px;
+    left: 1032px;
+}
+.commodity_classify .interesting .intst32{
+    position: relative;
+    top: -1488px;
+    left: 1120px;
+}
+.commodity_classify .interesting .intst41{
+    position: relative;
+    top: -1488px;
+    left: 1032px;    
+}
+.commodity_classify .interesting .intst42{
+    position: relative;
+    top: -1548px;
+    left: 1120px;
+}
+.commodity_classify .interesting .intst51{
+    position: relative;
+    top: -1538px;
+    left: 1032px;
+}
+.commodity_classify .interesting .intst52{
+    position: relative;
+    top: -1598px;
+    left: 1120px;
+}
+.commodity_classify .interesting .intst61{
+    position: relative;
+    top: -1593px;
+    left: 1032px;
+}
+.commodity_classify .interesting .intst62{
+    position: relative;
+    top: -1653px;
+    left: 1120px;
+}
+.commodity_classify .interesting .intst71{
+    position: relative;
+    top: -1648px;
+    left: 1032px;
+}
+.commodity_classify .interesting .intst72{
+    position: relative;
+    top: -1708px;
+    left: 1120px;
+}
+
+.commodity_classify .electric p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_ele{
+    top: 1648px;
+    width: 1200px;
+}
+
+.commodity_classify .electric .ele_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .electric table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 1675px;
+    left: 382px;
+}
+.commodity_classify .electric table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .electric ul{
+    position: relative;
+}
+
+.commodity_classify .electric ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .electric ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .electric ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .electric ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .electric ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .electric ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .electric ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .electric ul li:nth-child(5){
+    top: 90px;
+    left: 758px;
+}
+.commodity_classify .electric ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .electric ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .electric ul .elecpai{
+    position: absolute;
+    top: 400px;
+}
+
+
+
+.commodity_classify .communication p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_com{
+    top: 2158px;
+    width: 1200px;
+}
+
+.commodity_classify .communication .com_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .communication table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 2185px;
+    left: 382px;
+}
+.commodity_classify .communication table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .communication ul{
+    position: relative;
+}
+
+.commodity_classify .communication ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .communication ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .communication ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .communication ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .communication ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .communication ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .communication ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .communication ul li:nth-child(5){
+    top: 90px;
+    left: 758px;
+}
+.commodity_classify .communication ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .communication ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .communication ul .elecpai{
+    position: absolute;
+    top: 400px;
+}
+
+
+
+
+.commodity_classify .comp_office p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_comp{
+    top: 2668px;
+    width: 1200px;
+}
+
+.commodity_classify .comp_office .comp_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .comp_office table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 2685px;
+    left: 382px;
+}
+.commodity_classify .comp_office table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .comp_office ul{
+    position: relative;
+}
+
+.commodity_classify .comp_office ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .comp_office ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .comp_office ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .comp_office ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .comp_office ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .comp_office ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .comp_office ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .comp_office ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .comp_office ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .comp_office ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .comp_office ul .comppai{
+    position: absolute;
+    top: 390px;
+}
+
+
+
+
+
+.commodity_classify .house p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_hou{
+    top: 3174px;
+    width: 1200px;
+}
+
+.commodity_classify .house .hou_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .house table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 3187px;
+    left: 382px;
+}
+.commodity_classify .house table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .house ul{
+    position: relative;
+}
+
+.commodity_classify .house ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .house ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .house ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .house ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .house ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .house ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .house ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .house ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .house ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .house ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .house ul .houpai{
+    position: absolute;
+    top: 390px;
+}
+
+
+
+.commodity_classify .life p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_li{
+    top: 3682px;
+    width: 1200px;
+}
+
+.commodity_classify .life .li_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .life table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 3695px;
+    left: 382px;
+}
+.commodity_classify .life table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .life ul{
+    position: relative;
+}
+
+.commodity_classify .life ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .life ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .life ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .life ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .life ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .life ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .life ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .life ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .life ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .life ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .life ul .lipai{
+    position: absolute;
+    top: 390px;
+}
+
+
+
+.commodity_classify .outdoor p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_out{
+    top: 4194px;
+    width: 1200px;
+}
+
+.commodity_classify .outdoor .out_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .outdoor table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 4215px;
+    left: 382px;
+}
+.commodity_classify .outdoor table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .outdoor ul{
+    position: relative;
+}
+
+.commodity_classify .outdoor ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .outdoor ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .outdoor ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .outdoor ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .outdoor ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .outdoor ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .outdoor ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .outdoor ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .outdoor ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .outdoor ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .outdoor ul .outpai{
+    position: absolute;
+    top: 390px;
+}
+
+
+
+
+
+.commodity_classify .car p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_car{
+    top: 4705px;
+    width: 1200px;
+}
+
+.commodity_classify .car .car_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .car table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 4720px;
+    left: 382px;
+}
+.commodity_classify .car table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .car ul{
+    position: relative;
+}
+
+.commodity_classify .car ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .car ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .car ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .car ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .car ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .car ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .car ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .car ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .car ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .car ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .car ul .carpai{
+    position: absolute;
+    top: 390px;
+}
+
+
+
+
+.commodity_classify .food p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_food{
+    top: 5210px;
+    width: 1200px;
+}
+
+.commodity_classify .food .food_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .food table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 5230px;
+    left: 382px;
+}
+.commodity_classify .food table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .food ul{
+    position: relative;
+}
+
+.commodity_classify .food ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .food ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .food ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .food ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .food ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .food ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .food ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .food ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .food ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .food ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .food ul .foodpai{
+    position: absolute;
+    top: 390px;
+}
+
+
+
+
+.commodity_classify .medical p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_medical{
+    top: 5720px;
+    width: 1200px;
+}
+
+.commodity_classify .medical .medical_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .medical table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 5740px;
+    left: 382px;
+}
+.commodity_classify .medical table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .medical ul{
+    position: relative;
+}
+
+.commodity_classify .medical ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .medical ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .medical ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .medical ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .medical ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .medical ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .medical ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .medical ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .medical ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .medical ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .medical ul .medicalpai{
+    position: absolute;
+    top: 390px;
+}
+
+
+
+
+.commodity_classify .book p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_book{
+    top: 6230px;
+    width: 1200px;
+}
+
+.commodity_classify .book .book_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .book table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 6250px;
+    left: 382px;
+}
+.commodity_classify .book table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .book ul{
+    position: relative;
+}
+
+.commodity_classify .book ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .book ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .book ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .book ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .book ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .book ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .book ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .book ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .book ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .book ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .book ul .bookpai{
+    position: absolute;
+    top: 390px;
+}
+
+
+
+
+.commodity_classify .finacal p span{
+    font-size: 20px;
+    font-weight: 100;
+    color: red;
+}
+
+.commodity_classify .hr_finacal{
+    top: 6740px;
+    width: 1200px;
+}
+
+.commodity_classify .finacal .finacal_word {
+    float: right;
+    margin-top: -20px;
+}
+
+.commodity_classify .finacal table{
+    position: absolute;
+    transform: scale(1.4);
+    height: 105px;
+    top: 6760px;
+    left: 382px;
+}
+.commodity_classify .finacal table tr td{
+    border-bottom: 1px solid #ededed;
+}
+
+.commodity_classify .finacal ul{
+    position: relative;
+}
+
+.commodity_classify .finacal ul li{
+    height: 150px;
+    border: 1px solid #ededed;
+}
+
+.commodity_classify .finacal ul li:nth-child(n){
+    position: absolute;
+}
+
+.commodity_classify .finacal ul li:nth-child(n+3){
+    transform: scale(1.2);
+}
+
+.commodity_classify .finacal ul li:nth-child(1){
+    top: 172px;
+    left: 0px;
+}
+
+.commodity_classify .finacal ul li:nth-child(2){
+    top: 12px;
+    left: 164px;
+}
+.commodity_classify .finacal ul li:nth-child(3){
+    top: 26px;
+    left: 515px;
+}
+.commodity_classify .finacal ul li:nth-child(4){
+    top: 212px;
+    left: 515px;
+}
+.commodity_classify .finacal ul li:nth-child(5){
+    top: 75px;
+    left: 778px;
+}
+.commodity_classify .finacal ul li:nth-child(6){
+    top: 26px;
+    left: 977px;
+}
+.commodity_classify .finacal ul li:nth-child(7){
+    top: 212px;
+    left: 977px;
+}
+.commodity_classify .finacal ul .finacalpai{
+    position: absolute;
+    top: 390px;
+}
+
+.hot{
+    position: relative;
+    height: 380px;
+}
+.hot p span{
+    font-size: 20px;
+}
+.hot ul li:nth-child(n){
+    position: absolute;
+}
+
+.hot ul li:nth-child(1){
+    top: 40px;
+    left: 0px;
+}
+ .hot ul li:nth-child(2){
+    top: 40px;
+    left: 235px;
+}
+.hot ul li:nth-child(3){
+    top:170px ;
+    left: 235px;
+}
+.hot ul li:nth-child(4){
+    top:40px ;
+    left: 460px;
+}
+.hot ul li:nth-child(5){
+    top:170px ;
+    left: 460px;
+}
+.hot ul li:nth-child(6){
+    top:40px ;
+    left: 685px;
+}
+.hot ul li:nth-child(7){
+    top:170px ;
+    left: 685px;
+}
+.hot ul li:nth-child(8){
+    top:40px ;
+    left: 910px;
+} 

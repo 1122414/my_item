@@ -1,0 +1,134 @@
+.nav_htight .logo a span {
+    position: absolute;
+    top: -6px;
+    left: 168px;
+    display: inline-block;
+    font-size: 50px;
+    color: #b1191a;
+}
+
+.nav_htight .logo a img[src="images/秒杀.png"] {
+    position: absolute;
+    top: 20px;
+    left: 188px;
+}
+
+.kill_nav {
+    position: relative;
+    height: 72px;
+    line-height: 45px;
+}
+
+.kill_nav li {
+    float: left;
+}
+
+.kill_nav .left_box {
+    position: absolute;
+    top: 15px;
+    left: 28px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+}
+
+.kill_nav .left_box li {
+    margin-right: 60px;
+}
+
+.kill_nav .right_box {
+    position: absolute;
+    top: 15px;
+    left: 305px;
+    font-size: 12px;
+    color: #ddd;
+    margin-left: 60px;
+}
+
+.kill_nav .right_box li {
+    margin-left: 48px;
+}
+
+.kill_body ul li {
+    width: 292px;
+    height: 460px;
+    float: left;
+    font-size: 14px;
+    margin-left: 5px;
+}
+
+.kill_body .kill_container ul li span {
+    display: inline-block;
+
+    padding: 0 5px 0 5px;
+}
+
+.kill_body .kill_container ul li .price .miaosha {
+    font-size: 22px;
+    color: #e60012;
+}
+
+.kill_body .kill_container ul li .price .yuanjia {
+    font: 14px;
+    color: #a4a4a4;
+    text-decoration: line-through;
+}
+
+.kill_body .kill_container ul li .bar {
+    float: left;
+    width: 135px;
+    height: 14px;
+    border: 1px solid red;
+    border-radius: 7px;
+    padding: 1px;
+    margin: 3px 5px 0 0;
+
+}
+
+.kill_body .kill_container ul li .bar_in {
+    float: left;
+    width: 87%;
+    height: 100%;
+    border-radius: 7px;
+    background-color: red;
+}
+
+.kill_body .kill_container ul li span:nth-of-type(2) {
+    float: left;
+}
+
+.kill_body .kill_container ul li .buy_now {
+    height: 52px;
+    margin-top: 5px;
+    font-size: 20px;
+    color: #ffffff;
+    text-align: center;
+    line-height: 52px;
+    background-color: #b1191a;
+}
+
+.trangle {
+    display: inline-block;
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    margin-left: -50px;
+    width: 0;
+    height: 0;
+    /* 注意三角的 底边是二倍像素 靠的是边框粗细*/
+    border: 50px solid transparent;
+    border-bottom-color: red;
+        }
+
+.top{
+    position: fixed;
+    top: 90%;
+    left: 88%;
+    width: 60px;
+    height: 60px;
+    color: white;
+    background-color: red;
+    font-size: 20px;
+    text-align: center;
+    line-height: 60px;
+}

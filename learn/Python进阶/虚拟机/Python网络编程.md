@@ -1001,9 +1001,12 @@ if __name__ == '__main__':
 2. 互斥锁使用
 
    1. 互斥锁创建：mutex = threading.Lock()
+   
    2. 上锁：muteax.acquire()
+   
    3. 释放锁：mutex.release()
-   4. 
+   
+      
 
 ### 8、死锁
 
@@ -1032,7 +1035,9 @@ if __name__ == '__main__':
 
 
 
-## 网络
+# 网络
+
+## TCP等
 
 ### 1、网络介绍
 
@@ -1475,5 +1480,447 @@ if __name__ == '__main__':
 知识要点：
 
 1. 编写一个TCP服务端程序，循环等待接受客户端的连接请求
-2. 当客户端和服务端建立连接成功，创建子线程，使用子线程专门处理客户端的请求，防止主线程阻塞
+2. 当客户端和服务端建立连接成功，创建子线程，**使用子线程专门处理客户端的请求，防止主线程阻塞**
 
+## Http等
+
+### 1、网址
+
+1. 网址的概念：
+
+   网址又称url，意思是**统一资源定位符**，通俗理解就是网络资源地址
+
+2. URL的组成
+
+   ![image-20250224134011897](img/image-20250224134011897.png)
+
+
+
+### 2、HTTP协议介绍
+
+![image-20250224134759248](img/image-20250224134759248.png)
+
+1. HTTP协议概念及作用
+
+   HTTP协议：超文本传输协议
+
+   超文本是指在**文本数据基础上还包含非文本数据**，非文本数据有**图片，音乐，视频**等，而这些非文本数据会使用**链接方式**进行加载显示，通俗来说超文本就是**带有链接的文本数据**也就是我们常说的**网页数据**
+
+   ![image-20250224134956781](img/image-20250224134956781.png)
+
+   HTTP协议设计之前目的是传输网页数据，现在**允许传输任意类型的数据**。
+
+   传输HTTP协议格式的数据是基于**TCP传输协议**的，发送数据前需要先**建立连接**
+
+   **TCP传输协议**是用来保证网络中传输的**数据安全性**，**HTTP协议**是用来规定这些数据的**具体格式**
+
+2. 浏览器访问Web服务器的过程
+
+   ![image-20250224135939041](img/image-20250224135939041.png)
+
+
+
+### 3、HTTP请求报文
+
+![image-20250224140741909](img/image-20250224140741909.png)
+
+1. GET方式请求报文
+
+   获取web服务器数据
+
+   - 请求行
+
+     - 请求方式、请求资源路径、HTTP协议版本
+
+   - 请求头
+
+   - 空行
+
+     Accept中：q是权值，越大越先显示
+
+     ![image-20250224140235359](img/image-20250224140235359.png)
+
+2. POST方式请求报文
+
+   向web服务器发送数据
+
+   - 请求行
+     - 请求方式、请求资源路径、HTTP协议版本
+   - 请求头
+   - 空行
+   - 请求体
+
+   ![image-20250224140553871](img/image-20250224140553871.png)
+
+注意：**POST方式可以允许没有请求体**，但是很少见
+
+### 4、HTTP响应报文
+
+![image-20250224140810633](img/image-20250224140810633.png)
+
+相应行由：HTTP协议版本、状态码、状态描述组成，最常见的状态码是200
+
+![image-20250224140823971](img/image-20250224140823971.png)
+
+1. HTTP状态码介绍
+
+   用于表示Web服务器响应状态的3位数字代码
+
+   | 状态码 | 说明                             |
+   | ------ | -------------------------------- |
+   | 200    | 服务器已成功处理了请求           |
+   | 400    | 错误的请求，请求地址或者参数有误 |
+   | 404    | 请求资源在服务器不存在           |
+   | 500    | 服务器内部源代码出现错误         |
+
+
+
+### 5、查看HTTP协议的通信过程
+
+1. 谷歌浏览器开发者工具使用
+
+   略
+
+2. ![image-20250224141452810](img/image-20250224141452810.png)
+
+   ![image-20250224141653310](img/image-20250224141653310.png)
+
+   ![image-20250224141715087](img/image-20250224141715087.png)
+
+
+
+## Web
+
+### 1、搭建Python自带的静态Web服务器
+
+静态Web服务器是为发出请求的浏览器提供静态文档的程序，搭建python自带的服务器使用python -m http.server 端口号即可，默认端口号为8000
+
+![image-20250224142855850](img/image-20250224142855850.png)
+
+
+
+### 2、开发自己的静态Web服务器（返回固定页面数据）
+
+开发步骤：
+
+1. 编写一个TCP服务端程序
+
+2. 获取浏览器发送的HTTP请求报文数据
+
+3. 读取固定页面数据，把页面数据组装成HTTP响应报文数据发送给浏览器
+
+4. HTTP响应报文数据发送完成以后，关闭服务于客户端的套接字
+
+   ![image-20250224143214014](img/image-20250224143214014.png)
+
+~~~python
+
+import socket
+import threading
+
+if __name__ == '__main__':
+  
+# 1. 编写一个TCP服务端程序
+  # 1.创建TCP服务端套接字
+  tcp_socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  tcp_socket_server.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+  # 2.绑定IP地址和端口号
+  tcp_socket_server.bind(('127.0.0.1', 8080))
+  # 3.设置监听，等待客户端连接
+  tcp_socket_server.listen(128)
+
+  while True:
+# 2. 获取浏览器发送的HTTP请求报文数据
+    # 1.建立连接
+    client_socket, client_addr = tcp_socket_server.accept()
+    # 2.获取浏览器请求信息
+    client_request_data = client_socket.recv(1024).decode()
+    # 3.打印
+    print(client_request_data)
+
+# 3. 读取固定页面数据，把页面数据组装成HTTP响应报文数据发送给浏览器
+    with open('learn\Python进阶\static\品优购项目\index.html', 'rb') as f:
+      file_data = f.read()
+
+    # 应答行
+    response_line = 'HTTP/1.1 200 OK\r\n'
+    # 应答头
+    response_header = 'Server: Python\r\n'
+    # 应答体
+    response_body = file_data
+    # 组装HTTP响应报文数据
+    response_data = (response_line + response_header + '\r\n').encode() + response_body
+
+    client_socket.send(response_data)
+    
+# 4. HTTP响应报文数据发送完成以后，关闭服务于客户端的套接字
+    client_socket.close()
+~~~
+
+
+
+### 3、开发自己的静态Web服务器（返回指定页面数据）
+
+步骤：
+
+1. 获取用户请求资源路径
+2. 根据请求资源的路径，读取指定文件的数据
+3. 组装指定文件数据的响应报文，发送给浏览器
+4. 判断请求文件在服务端不存在，组装404状态响应报文，发送给浏览器
+
+~~~python
+import socket
+import threading
+
+def solve_request(status_code,client_socket, client_addr, file_data):
+  # 应答头
+  response_header = 'Server: Python\r\n'
+  if status_code == 200:
+    # 应答行
+    response_line = 'HTTP/1.1 200\r\n'
+    # 应答体
+    response_body = file_data
+    # 组装HTTP响应报文数据
+    response_data = (response_line + response_header + '\r\n').encode() + response_body
+
+  elif status_code == 404:
+    # 应答行
+    response_line = 'HTTP/1.1 404 Not Found\r\n'
+    # 应答体
+    response_body = "404 Not Found"
+    # 组装HTTP响应报文数据
+    response_data = (response_line + response_header + '\r\n' + response_body).encode() 
+  client_socket.send(response_data)
+
+if __name__ == '__main__':
+  
+# 1. 编写一个TCP服务端程序
+  # 1.创建TCP服务端套接字
+  tcp_socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  tcp_socket_server.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+  # 2.绑定IP地址和端口号
+  tcp_socket_server.bind(('127.0.0.1', 8080))
+  # 3.设置监听，等待客户端连接
+  tcp_socket_server.listen(128)
+
+  while True:
+# 2. 获取浏览器发送的HTTP请求报文数据
+    # 1.建立连接
+    client_socket, client_addr = tcp_socket_server.accept()
+    # 2.获取浏览器请求信息
+    client_request_data = client_socket.recv(1024).decode()
+    # 3.打印
+    print(client_request_data)
+    # 4.获取用户请求资源路径
+    request_data = client_request_data.split()
+    print(request_data)
+    request_path = request_data[1]
+
+    if request_path == "/":
+        request_path = "/index.html"
+
+# 3. 读取固定页面数据，把页面数据组装成HTTP响应报文数据发送给浏览器
+    try:
+      with open(f'learn\Python进阶\static\品优购项目\{request_path}', 'rb') as f:
+        file_data = f.read()
+    except Exception as e:
+      solve_request(404, client_socket, client_addr, file_data)
+    else:
+      solve_request(200, client_socket, client_addr, file_data)
+    
+    finally:
+# 4. HTTP响应报文数据发送完成以后，关闭服务于客户端的套接字
+      client_socket.close()
+~~~
+
+
+
+### 4、发开自己静态Web服务器（多任务版）
+
+~~~python
+import socket
+import threading
+
+def solve_request(status_code,client_socket, client_addr, file_data):
+  # 应答头
+  response_header = 'Server: Python\r\n'
+  if status_code == 200:
+    # 应答行
+    response_line = 'HTTP/1.1 200\r\n'
+    # 应答体
+    response_body = file_data
+    # 组装HTTP响应报文数据
+    response_data = (response_line + response_header + '\r\n').encode() + response_body
+
+  elif status_code == 404:
+    # 应答行
+    response_line = 'HTTP/1.1 404 Not Found\r\n'
+    # 应答体
+    response_body = "404 Not Found"
+    # 组装HTTP响应报文数据
+    response_data = (response_line + response_header + '\r\n' + response_body).encode() 
+  client_socket.send(response_data)
+
+def handle_client(client_socket):
+# 2.获取浏览器请求信息
+  client_request_data = client_socket.recv(1024).decode()
+  # 3.打印
+  print(client_request_data)
+  
+  # 4.获取用户请求资源路径
+  request_data = client_request_data.split()
+
+  # 判断客户端是否关闭
+  if len(request_data)==1:
+    client_socket.close()
+    return
+  print(request_data)
+  request_path = request_data[1]
+  if request_path == "/":
+      request_path = "/index.html"
+
+# 3. 读取固定页面数据，把页面数据组装成HTTP响应报文数据发送给浏览器
+  try:
+    with open(f'learn\Python进阶\static\品优购项目\{request_path}', 'rb') as f:
+      file_data = f.read()
+  except Exception as e:
+    solve_request(404, client_socket, client_addr, None)
+  else:
+    solve_request(200, client_socket, client_addr, file_data)
+    
+  finally:
+# 4. HTTP响应报文数据发送完成以后，关闭服务于客户端的套接字
+    client_socket.close()
+
+if __name__ == '__main__':
+  
+# 1. 编写一个TCP服务端程序
+  # 1.创建TCP服务端套接字
+  tcp_socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  tcp_socket_server.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+  # 2.绑定IP地址和端口号
+  tcp_socket_server.bind(('127.0.0.1', 8080))
+  # 3.设置监听，等待客户端连接
+  tcp_socket_server.listen(128)
+
+  while True:
+    
+# 2. 获取浏览器发送的HTTP请求报文数据
+    # 1.建立连接
+    client_socket, client_addr = tcp_socket_server.accept()
+    sub_thread = threading.Thread(target=handle_client,args=(client_socket,))
+    sub_thread.start()
+
+  # 3. 关闭服务端套接字
+  tcp_socket_server.close()
+~~~
+
+
+
+### 5、静态Web服务器-面向对象开发
+
+步骤：
+
+1. 把提供服务的Web服务器抽象成一个类（HTTPWebServer）
+2. 提供Web服务器初始化方法，在初始化方法里面创建Socket对象
+3. 提供一个开启Web服务器的方法，让Web服务器处理客户端请求操作
+
+~~~python
+import socket
+import threading
+  # # 3. 关闭服务端套接字
+  # tcp_socket_server.close()
+
+class HttpWebServer:
+  def __init__(self) -> None:
+  # 1. 编写一个TCP服务端程序
+    # 1.创建TCP服务端套接字
+    self.tcp_socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self.tcp_socket_server.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+    # 2.绑定IP地址和端口号
+    self.tcp_socket_server.bind(('127.0.0.1', 8080))
+    # 3.设置监听，等待客户端连接
+    self.tcp_socket_server.listen(128)
+    pass
+
+  def solve_request(self,status_code,client_socket, client_addr, file_data):
+  # 应答头
+    response_header = 'Server: Python\r\n'
+    if status_code == 200:
+      # 应答行
+      response_line = 'HTTP/1.1 200\r\n'
+      # 应答体
+      response_body = file_data
+      # 组装HTTP响应报文数据
+      response_data = (response_line + response_header + '\r\n').encode() + response_body
+
+    elif status_code == 404:
+      # 应答行
+      response_line = 'HTTP/1.1 404 Not Found\r\n'
+      # 应答体
+      response_body = "404 Not Found"
+      # 组装HTTP响应报文数据
+      response_data = (response_line + response_header + '\r\n' + response_body).encode() 
+    client_socket.send(response_data)
+
+  def handle_client(self,client_socket, client_addr):
+  # 2.获取浏览器请求信息
+    client_request_data = client_socket.recv(1024).decode()
+    # 3.打印
+    print(client_request_data)
+    
+    # 4.获取用户请求资源路径
+    request_data = client_request_data.split()
+
+    # 判断客户端是否关闭
+    if len(request_data)==1:
+      client_socket.close()
+      return
+    print(request_data)
+    request_path = request_data[1]
+    if request_path == "/":
+        request_path = "/index.html"
+
+  # 3. 读取固定页面数据，把页面数据组装成HTTP响应报文数据发送给浏览器
+    try:
+      with open(f'learn\Python进阶\static\品优购项目\{request_path}', 'rb') as f:
+        file_data = f.read()
+    except Exception as e:
+      self.solve_request(404, client_socket, client_addr, None)
+    else:
+      self.solve_request(200, client_socket, client_addr, file_data)
+      
+    finally:
+  # 4. HTTP响应报文数据发送完成以后，关闭服务于客户端的套接字
+      client_socket.close()
+
+  def start(self):
+    while True:
+# 2. 获取浏览器发送的HTTP请求报文数据
+    # 1.建立连接
+      client_socket, client_addr = self.tcp_socket_server.accept()
+      sub_thread = threading.Thread(target=self.handle_client,args=(client_socket,client_addr,))
+      sub_thread.start()
+
+if __name__ == '__main__':
+  # 创建服务器对象
+  my_web_server = HttpWebServer()
+  # 启动服务器
+  my_web_server.start()
+~~~
+
+
+
+### 6、静态Web服务器-命令行启动动态绑定端口号
+
+1. 获取终端命令行参数动态绑定端口号的web服务器程序
+
+   步骤：
+
+   1. 获取执行pyhton程序的终端命令行参数
+   2. 判断参数类型，设置端口号必须是整形
+   3. 给Web服务器类初始化方法添加一个端口号参数，用于绑定端口号
+
+
+
+## 数据库

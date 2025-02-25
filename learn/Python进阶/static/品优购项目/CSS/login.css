@@ -1,0 +1,149 @@
+
+.login_main{
+  position: absolute;
+  top: 80px;
+  left: -360px;
+  width: 100%;
+  height: 600px;
+}
+
+.login_main .login_squart{
+  position: absolute;
+  top: 50px;
+  left: 1060px;
+  width: 380px;
+  height: 380px;
+  background-color: white;
+}
+
+.login_main .login_squart .login_choice{
+  height: 100px;
+  /* background-color: yellow; */
+}
+
+.login_main .login_squart .login_choice span:nth-child(n){
+  display: inline-block;
+  text-align: center;
+  line-height: 100px;
+  width: 178px;
+  height: 80px;
+  font-size: 24px;
+  /* background-color: green; */
+}
+
+.login_main .login_squart .login_choice span:nth-child(2){
+  position: absolute;
+  left: 177px;
+  width: 1px;
+  height: 80px;
+}
+
+.login_main .login_squart .login_choice span:nth-child(3){
+  color: #d3424a;
+}
+
+.login_main .login_squart .login_all{
+  margin-left: 33px;
+  width: 295px;
+  height: 256px;
+  /* background-color: aqua; */
+}
+
+.login_main .login_squart .login_all .warning{
+  width: 100%;
+  height: 25px;
+  padding-top: 2px;
+  padding-left: 10px;
+  border: 1px solid #f7f2d9;
+  background-color: rgb(255, 253, 237);
+}
+
+.login_main .login_squart .login_all  input{
+  position: absolute;
+  height: 36px;
+  width: 258px;
+}
+
+/* 记住 */
+.login_main .login_squart .login_all input:focus{
+  outline: none;
+  border: 2px solid #52aeea;
+}
+
+.login_main .login_squart .login_all .account,
+.pswd{
+  margin-top: 15px;
+}
+
+.login_main .login_squart .login_all .auto_login{
+  margin-top: 18px;
+}
+
+.login_main .login_squart .login_all .login_button{
+  margin-top: 10px;
+  line-height: 42px;
+  width: 295px;
+  height: 42px;
+  color: white;
+  font-size: 24px;
+  border: 1px solid #ca111a;
+  background-color: #ca111a;
+}
+
+.login_main .login_squart .login_all .else_login{
+  margin-top: 65px;
+  /* background-color:blue; */
+}
+
+.login_main .login_squart .login_all .auto_login span:nth-child(2){
+  margin-left: 20px;
+}
+.login_main .login_squart .login_all .auto_login span:nth-child(3){
+  margin-left: 160px;
+}
+
+.login_main .login_squart .login_all .auto_login input{
+  width: 16px;
+  height: 16px;
+}
+
+footer {
+    position: absolute;
+    top: 555px;
+    padding: 1px;
+    border: 1px solid transparent;
+    overflow: hidden;
+    height: 100px;
+    background-color: #f5f5f5;
+}
+
+footer .mod_help ul {
+    position: absolute;
+    top: -30px;
+    left: 118px;
+}
+
+footer .mod_help ul li {
+    text-align: center;
+    float: left;
+    margin-top: 50px;
+    margin-right: 14px;
+}
+
+footer .mod_help ul li span {
+    display: inline-block;
+    margin-left: 8px;
+}
+
+footer .mod_copyright {
+    position: absolute;
+    top: 50px;
+    left: 250px;
+}
+
+footer .mod_copyright span:nth-of-type(2) {
+    position: absolute;
+    top: 18px;
+    left: 228px;
+}
+

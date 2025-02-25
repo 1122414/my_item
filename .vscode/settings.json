@@ -47,6 +47,13 @@
     "fstream": "cpp",
     "sstream": "cpp"
   },
+  "code-runner.executorMap": {
+    "cpp": "cd /d \"$dir\" && (if not exist output mkdir output) && g++ \"$fileName\" -o \"output\\$fileNameWithoutExt.exe\" && call \"output\\$fileNameWithoutExt.exe\""
+  },
+  "C_Cpp.debuggerPath": "D:\\mingw64\\mingw64\\bin\\gdb.exe", // 替换为你的实际路径
+  "cmake.debugConfig": {
+    "miDebuggerPath": "D:\\mingw64\\mingw64\\bin\\gdb.exe"
+  },
   "terminal.external.windowsExec": "cmd.exe", // 强制使用CMD
   // "debug.allowBreakpointsEverywhere": true,
   "code-runner.runInTerminal": true,
@@ -55,5 +62,6 @@
   // "debug.console.closeOnEnd": true
   "debug.allowBreakpointsEverywhere": false,
   "debug.javascript.autoAttachFilter": "onlyWithFlag",
-  "debug.showInStatusBar": "always"
+  "debug.showInStatusBar": "always",
+  "cmake.sourceDirectory": "E:/GitHub/my_item/.vscode"
 }

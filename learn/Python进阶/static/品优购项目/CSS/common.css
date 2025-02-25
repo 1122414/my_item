@@ -1,0 +1,237 @@
+/* 版心 */
+
+.w {
+    width: 1200px;
+    margin: 0 auto;
+    font-family: 'icomoon';
+}
+
+.hr {
+    position: relative;
+}
+
+.clearfix:before,
+.clearfix:after {
+    content: "";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+body {
+    width: 1920px;
+    height: 3885px;
+}
+
+hr {
+    position: absolute;
+    top: 180px;
+    width: 100%;
+    height: 5px;
+    background-color: #b1191a;
+    border: none;
+    
+}
+
+/* 快捷导航栏 */
+.shortcut {
+    font-size: 12px;
+    height: 31px;
+    line-height: 31px;
+    background-color: #f1f1f1;
+}
+
+/* 左盒子 */
+.box_fl {
+    float: left;
+}
+
+/* 右盒子 */
+.box_ri {
+    float: right;
+}
+
+.box_ri ul li {
+    margin-right: 5px;
+    display: inline-block;
+}
+
+/* 导航栏 */
+
+nav {
+    position: relative;
+    height: 55px;
+}
+
+.nav_htight {
+    margin-top: 27px;
+}
+
+.logo {
+    float: left;
+    position: relative;
+    top: -10px;
+}
+
+.logo a {
+    font-size: 0;
+}
+
+.logo h1 {
+    display: inline-block;
+    font-size: 37px;
+    color: #c40000;
+}
+
+.logo span {
+    position: absolute;
+    top: 43px;
+    left: 60px;
+    font-size: 16px;
+    color: #4e4e4e;
+}
+
+.search {
+    float: left;
+    margin-left: 175px;
+}
+
+.search input {
+    float: left;
+    width: 458px;
+    height: 35px;
+    border: 2px solid #c40000;
+}
+
+.search input:focus{
+    outline:none;
+    border: 2px solid #c40000;
+}
+
+.search button {
+    width: 82px;
+    color: #fff;
+    height: 35px;
+    line-height: 34px;
+    display: inline-block;
+    font-size: 16px;
+    border: 1px solid #c40000;
+    background-color: #c40000;
+}
+
+.hotwords {
+    position: absolute;
+    top: 38px;
+    left: 328px;
+}
+
+.hotwords ul li {
+    margin-left: 24px;
+    display: inline-block;
+}
+
+/* 购物车此处用伪元素 ::before ::after 比较好 */
+.shopcar {
+    position: relative;
+    float: right;
+    width: 140px;
+    height: 35px;
+    margin-right: 65px;
+    text-align: center;
+    line-height: 35px;
+    font-size: 12px;
+    background-color: #f7f7f7;
+}
+
+.shopcar .count {
+    /* 注意行高继承问题 */
+    position: absolute;
+    top: -5px;
+    left: 105px;
+    height: 14px;
+    line-height: 14px;
+    color: #fff;
+    background-color: #e60012;
+    padding: 0 5px;
+    border-radius: 7px 7px 7px 0;
+}
+
+footer {
+    position: relative;
+    padding: 1px;
+    border: 1px solid transparent;
+    overflow: hidden;
+    height: 417px;
+    background-color: #f5f5f5;
+}
+
+footer .mod_service {
+    margin-top: 30px;
+    height: 110px;
+    text-align: center;
+}
+
+footer .mod_service li {
+    box-sizing: border-box;
+    float: left;
+    width: 238px;
+}
+
+footer .mod_service li img {
+    float: left;
+    padding-left: 75px;
+}
+
+footer .mod_service li h4 {
+    margin-top: 10px;
+}
+
+footer .mod_help dl {
+    width: 198px;
+    float: left;
+    text-align: center;
+}
+
+footer .mod_help dl dt {
+    color: #6a6a6a;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+footer .mod_help dl dd {
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+footer .mod_help ul {
+    position: absolute;
+    top: 288px;
+    left: 118px;
+}
+
+footer .mod_help ul li {
+    text-align: center;
+    float: left;
+    margin-top: 50px;
+    margin-right: 14px;
+}
+
+footer .mod_help ul li span {
+    display: inline-block;
+    margin-left: 8px;
+}
+
+footer .mod_copyright {
+    position: absolute;
+    top: 369px;
+    left: 250px;
+}
+
+footer .mod_copyright span:nth-of-type(2) {
+    position: absolute;
+    top: 18px;
+    left: 228px;
+}

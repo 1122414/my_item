@@ -1,0 +1,227 @@
+.clear_count{
+  height: 1520px;
+}
+
+.nav_htight .search{
+  position: absolute;
+  top: 0px;
+  left: 484px;
+}
+
+.clear_count .start_p{
+  position: absolute;
+  color: red ;
+}
+
+.clear_count .clear_count_main nav{
+  line-height: 28px;
+  height: 48px;
+  /* background-color: aqua; */
+  display: flex;
+  width: 1200px;
+  padding-top: 20px;
+}
+
+.clear_count .clear_count_main nav span{
+  flex: 1;
+  border-top: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+  background-color: #f5f5f5;
+}
+
+.clear_count .clear_count_main nav span:nth-child(2){
+  flex: 3;
+}
+
+.clear_count .self_run{
+  margin-top: 12px;
+  border-bottom: 1px solid #dddddd;
+}
+
+.clear_count .self_run span:nth-child(2){
+  background-color: red;
+  color: white;
+}
+.clear_count .self_run span:nth-child(3),
+.clear_count .self_run span:nth-child(4){
+  float: right;
+}
+
+.clear_count .self_run span:nth-child(3){
+
+  color: red;
+}
+
+.clear_count .self_run span:nth-child(4){
+  margin-right: 10px;
+}
+
+.clear_count .clear_main{
+  margin-top: 20px;
+  width: 100%;
+  height: 500px;
+}
+
+.clear_count .clear_count_main .clear_main table tr{
+  height: 120px;
+}
+
+.clear_count .clear_count_main .clear_main table tr:hover{
+  background-color: pink;
+}
+.clear_count .clear_count_main .clear_main table tr:active{
+  background-color: pink;
+}
+
+.clear_count .clear_count_main .clear_main table tr:nth-child(2){
+  height: 60px;
+}
+
+.clear_count .clear_count_main .clear_main table tr:nth-child(3){
+  height: 120px;
+}
+
+.clear_count .clear_count_main .clear_main table tr td:nth-child(2){
+  padding-left: 92px;
+}
+
+.clear_count .clear_count_main .clear_main table tr td:nth-child(3){
+  padding-left: 72px;
+}
+
+.clear_count .clear_count_main .clear_main table tr td:nth-child(3) span{
+  box-sizing: border-box;
+  border: 2px solid #dddddd;
+  display: inline-block;
+  line-height: 15px;
+  text-align: center;
+  width: 20px;
+  height: 20px;
+}
+
+.clear_count .clear_count_main .clear_main table tr td:nth-child(3) span:nth-child(2){
+  width: 32px;
+  background-color: white;
+}
+
+.clear_count .clear_count_main .clear_main table tr td:nth-child(3) span:nth-child(3){
+  color: red;
+}
+
+.clear_count .clear_count_main .clear_main table tr td:nth-child(4){
+  padding-left: 98px;
+}
+
+.clear_count .clear_count_main .clear_main table tr td:nth-child(5){
+  padding-left: 98px;
+}
+
+.clear_count .clear_count_main .clear_main table tr:nth-child(6){
+  height: 60px;
+}
+
+.clear_count .clear_count_main .clear_main table tr:nth-child(7){
+  height: 60px;
+}
+
+.clear_count .clear_count_main .clear_main .close_account{
+  line-height: 56px;
+  margin-top: 20px;
+  width: 1200px;
+  height: 56px;
+  border-top: 2px solid #dddddd;
+  border-bottom: 2px solid #dddddd;
+}
+
+.clear_count .clear_count_main .clear_main .close_account .left_little_box{
+  float: left;
+}
+
+.clear_count .clear_count_main .clear_main .close_account .right_little_box{
+  float: right;
+}
+
+.clear_count .clear_count_main .clear_main .close_account .right_little_box span{
+  position: relative;
+  top: -10px;
+}
+
+.clear_count .clear_count_main .clear_main .close_account .right_little_box span:last-child{
+  position: relative;
+  top: 10px;
+  left: -400px;
+}
+
+.clear_count .clear_count_main .clear_main .close_account .right_little_box input{
+  position: relative;
+  right: -78px;
+  width: 120px;
+  height: 56px;
+  font-size: 20px;
+  color: white;
+  border: 2px solid #e60012;
+  background-color: #e60012;
+}
+
+.clear_count .clear_count_main .clear_main .already_delete{
+  margin-top: 20px;
+}
+
+.clear_count .clear_count_main .clear_main .already_delete p:nth-child(2){
+  margin-top: 20px;
+  line-height: 40px;
+  height: 40px;
+  background-color: #fffdee;
+}
+
+.clear_count .clear_count_main .clear_main .already_delete p:nth-child(2) span{
+  float: right;
+  margin-right: 20px;
+}
+
+.clear_count .guess_like{
+  position: absolute;
+  top: 1280px;
+  height: 40px;
+  width: 1200px;
+  background-color: #f1f1f1;
+}
+
+.clear_count .guess_like a{
+  line-height: 40px;
+  text-align: center;
+  display: inline-block;
+  width: 120px;
+  height: 100%;
+}
+
+.clear_count .guess_like a:first-child{
+  background-color: #e60012;
+  color: white;
+}
+
+.clear_count .guess_like a:focus{
+  background-color: #e60012;
+  color: white;
+}
+
+.clear_count .guess_like span{
+  color: white;
+  text-align: center;
+  font-size: 24px;
+  line-height: 56px;
+  display: inline-block;
+  width: 20px;
+  height: 56px;
+  background-color: grey;
+}
+
+.clear_count .guess_like .pre_paper{
+  position: relative;
+  left: -992px;
+}
+
+.clear_count .guess_like .next_paper{
+  position: relative;
+  left: -50px;
+}

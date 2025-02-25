@@ -34,6 +34,30 @@
       ],
       "group": "build"
     },
+    // {
+    //   "label": "Build to Output",
+    //   "type": "shell",
+    //   "command": "D:\\mingw64\\mingw64\\bin\\gdb.exe",
+    //   "args": [
+    //     "-finput-charset=UTF-8",
+    //     "-fexec-charset=GBK",
+    //     "-g", // 必须添加 -g 参数生成调试符号
+    //     "${file}",
+    //     "-o",
+    //     "${fileDirname}/output/${fileBasenameNoExtension}.exe"
+    //   ],
+    //   "group": "build",
+    //   "problemMatcher": ["$gcc"],
+    //   "options": {
+    //     "shell": {
+    //       "executable": "cmd.exe",
+    //       "args": [
+    //         "/C",
+    //         "mkdir \"${fileDirname}\\output\" 2>nul & g++ \"${file}\" -finput-charset=UTF-8 -fexec-charset=GBK -g -o \"${fileDirname}\\output\\${fileBasenameNoExtension}.exe\""
+    //       ]
+    //     }
+    //   }
+    // },
     {
       "label": "check-python-file",
       "type": "shell",
@@ -58,12 +82,21 @@
       "args": [
         "-fdiagnostics-color=always",
         "-g",
+        "-finput-charset=UTF-8",
+        "-fexec-charset=GBK",
         "${file}",
         "-o",
-        "${fileDirname}\\${fileBasenameNoExtension}.exe"
+        "${fileDirname}/output/${fileBasenameNoExtension}.exe"
       ],
       "options": {
-        "cwd": "${fileDirname}"
+        "cwd": "${fileDirname}",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": [
+            "/C",
+            "mkdir \"${fileDirname}\\output\" 2>nul & \"D:\\mingw64\\mingw64\\bin\\g++.exe\" -fdiagnostics-color=always -g -finput-charset=UTF-8 -fexec-charset=GBK \"${file}\" -o \"${fileDirname}\\output\\${fileBasenameNoExtension}.exe\""
+          ]
+        }
       },
       "problemMatcher": ["$gcc"],
       "group": {
