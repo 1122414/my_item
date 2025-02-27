@@ -93,6 +93,10 @@
 
 
 
+## Tmux
+
+
+
 ## 命令选项
 
 ### 1、查看目录信息命令选项
@@ -1035,7 +1039,7 @@ if __name__ == '__main__':
 
 
 
-# 网络
+
 
 ## TCP等
 
@@ -1924,3 +1928,448 @@ if __name__ == '__main__':
 
 
 ## 数据库
+
+### 1、什么是数据库
+
+数据库本身是一种文件
+
+数据库相比普通文件有以下特点：
+
+- 持久化存储
+- 读写速度极高
+- 保证数据有效性
+- 对程序支持性非常好，容易扩展
+
+
+
+### 2、数据库分类
+
+- 关系型数据库：MySQL
+  - 指采用了关系模型来组织数据的数据库，关系模型指的就是二维表格模型
+  - MySQL采用双授权政策，分为社区办和商业版，由于体积小、速度快、总体使用成本低，开源，一般中小型网站使用MySQL
+  - ![image-20250225210053317](img/image-20250225210053317.png)
+- 非关系型数据库：MangoDB、redis
+  - NoSQL，强调Key-Value方式
+
+
+
+### 3、数据库管理系统
+
+1. 数据库管理系统介绍：
+
+   是为管理数据库而设计的软件系统
+
+   - 数据库文件集合：主要是一系列数据文件，作用存储数据
+
+   - 数据库服务器：主要负责对数据文件以及文件中的数据进行管理
+
+   - 数据库客户端：主要负责和服务端通信，向服务端传输数据或者从服务端获取数据
+
+     ![image-20250225210537168](img/image-20250225210537168.png)
+
+2. SQL语句：
+
+   数据库客户端通过SQL语句告诉服务端
+
+   SQL语句是结构化查询语言，是一种用来操作RDBMS的数据库语言。当前几乎所有关系型数据库都支持使用SQL语言操作，就是说可以通过SQL操作oracle、sql、server、mysql、sqlite等所有关系型数据库
+
+   
+
+   RDBMS是关系型数据库管理系统，专门管理关系型数据库
+
+   
+
+   常见的关系型数据库：
+
+   - oracle：银行，电信等
+   - ms sql server：在微软项目
+   - sqlite：轻量型数据库，主要应用在移动平台
+   - mysql：web时代使用最广泛的关系型数据库
+
+### 4、Linux下MySQL环境
+
+服务端：
+
+1. 安装服务器端：
+   - sudo apt-get install mysql-server
+2. 启动服务：
+   - sudo service mysql start
+3. 查看进程中是否存在MySQL服务：
+   - ps ajx|grep mysql
+   - ps:查看当前系统进程  -a 系那是所有用户进程 -j任务格式显示进程 -x显示无控制终端进程
+4. 关闭服务端
+   - sudo server mysql stop
+
+客户端：
+
+1. 客户端安装：
+   - sudo apt-get install mysql-client
+2. 连接命令
+   - mysql -uroot -pmysql
+3. 退出连接
+   - exit
+
+
+
+### 5、mysq数据类型  略
+
+
+
+### 6、数据完整性和约束
+
+1. 数据完整性
+
+   1. 数据完整性用于保证数据正确性，系统在更新、插入或者删除等要检查数据完整性，核实约束条件
+
+2. 参照完整性
+
+   1. 参照完整性属于表间规则。在更新、插入或者删除记录时，如果只改其一，就会影响数据完整性，如**删除表2的某记录，表1相应记录未删除**，则这些记录成为孤立记录
+
+3. 约束
+
+   | 约束类型    | 约束说明                     |
+   | ----------- | ---------------------------- |
+   | NOT NULL    | 非空                         |
+   | PRIMARY KEY | 主键（唯一、非空）           |
+   | UNIQUE KEY  | 唯一                         |
+   | DEFAULT     | 默认约束（该数据的默认值）   |
+   | FOREIGN KEY | 外键约束（需建立两表间关系） |
+
+
+
+## 数据库命令
+
+### 1、登录和退出数据库
+
+1. 连接数据库
+2. 输入用户名、密码
+3. 完成对数据库的操作
+4. 完成对表结构和表数据的操作
+5. 退出数据库
+
+| 快捷键      | 作用         |
+| ----------- | ------------ |
+| ctrl+a      | 快速回到行首 |
+| ctrl+e      | 回到行末     |
+| ctrl+l      | 清屏         |
+| ctrl+c+回车 | 结束         |
+
+
+
+| 命令                  | 作用                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| mysql -u用户名 -p密码 | 连接数据库<br />不显示的输入密码：mysql -uroot -p （回车）密码 |
+| exit / quit / ctrl+d  | 退出数据库                                                   |
+| select version()      | 查看版本信息                                                 |
+| select now()          | 查看时间                                                     |
+| source 文件名         | 从sql文件中导入数据                                          |
+
+
+
+### 2、数据库基本操作命令
+
+![image-20250225215419260](img/image-20250225215419260.png)
+
+
+
+### 3、数据表基本操作命令
+
+![image-20250225215507550](img/image-20250225215507550.png)
+
+![image-20250225215628384](img/image-20250225215628384.png)
+
+
+
+### 4、数据表结构修改命令
+
+![image-20250225215710212](img/image-20250225215710212.png)
+
+
+
+### 5、表数据操作命令
+
+![image-20250225220321143](img/image-20250225220321143.png)
+
+![image-20250225220356256](img/image-20250225220356256.png)
+
+as：起别名
+
+![image-20250225220444318](img/image-20250225220444318.png)
+
+![image-20250225220506205](img/image-20250225220506205.png)
+
+![image-20250225220533836](img/image-20250225220533836.png)
+
+
+
+## 数据库查询语句
+
+### 1、where比较运算查询
+
+![image-20250226120640733](img/image-20250226120640733.png)
+
+![image-20250226120649939](img/image-20250226120649939.png)
+
+
+
+### 2、where逻辑运算查询
+
+![image-20250226120818820](img/image-20250226120818820.png)
+
+
+
+### 3、where模糊查询
+
+![image-20250226120935609](img/image-20250226120935609.png)
+
+
+
+### 4、where范围查询
+
+![image-20250226121138073](img/image-20250226121138073.png)
+
+![image-20250226121146593](img/image-20250226121146593.png)
+
+![image-20250226121354223](img/image-20250226121354223.png)
+
+![image-20250226121230703](img/image-20250226121230703.png)
+
+![image-20250226121427423](img/image-20250226121427423.png)
+
+
+
+### 5、where空值判断
+
+![image-20250226121507589](img/image-20250226121507589.png)
+
+
+
+### 6、order排序查询
+
+![image-20250226122013160](img/image-20250226122013160.png)
+
+
+
+### 7、聚合函数
+
+![image-20250226122426311](img/image-20250226122426311.png)
+
+![image-20250226122445147](img/image-20250226122445147.png)
+
+![image-20250226122638474](img/image-20250226122638474.png)
+
+### 8、group分组查询
+
+1. 按性别分组，查询所有性别
+
+   - select gender from students group by gender;	# 注：根据什么分组就只能查询什么
+
+2. 计算每种性别的人数
+
+   - select gender,count(*) from students group by gender;	#注：聚合函数可用
+
+3. group_contact(...)
+
+   - select group_concat(name),gender from students group by gender;	#注：groupt_concat(...) 可以查询分组之外的
+
+4. having
+
+   ![image-20250226123435864](img/image-20250226123435864.png)
+
+5. with rollup 汇总作用
+
+   ![image-20250226123529558](img/image-20250226123529558.png)
+
+   ![image-20250226123545735](img/image-20250226123545735.png)
+
+   最后一行即是汇总
+
+![image-20250226123604781](img/image-20250226123604781.png)
+
+
+
+### 9、limit分页查询
+
+![image-20250226123706542](img/image-20250226123706542.png)
+
+每页显示两个，显示第四页的信息，按年龄从小到大排序
+
+select * from students order by age asc limit 6,2
+
+
+
+### 10、连接查询
+
+1. 内连接：
+
+   根据连接条件取出两个表"交集";	on是连接条件，where是连接后筛选条件
+
+   - 语法：select 字段 from 表1 inner join 表2 on 表1.字段1 = 表2.字段2
+
+   ![image-20250226125035394](img/image-20250226125035394.png)
+
+   
+
+2. 外连接：
+
+   左（外）连接查询：查询结果为两个表匹配到的数据和左表特有数据
+
+   注意：对于右表中不存在的数据使用null填充（右连接相反）
+
+   - 左连接语法：主表 left join 从表 on 连接条件
+   - 右连接语法：从表 right join 主表 on 连接条件
+
+   注意：
+
+   - 能够使用连接的前提是。多表间有字段关联
+
+   - 左右连接区别是在于主表在SQL语句中的位置，因此实际左连接就能满足常见需求
+
+     
+
+3. 自连接
+
+   ![image-20250226125953952](img/image-20250226125953952.png)
+
+   ![image-20250226130127090](img/image-20250226130127090.png)
+
+   ![image-20250226130356571](img/image-20250226130356571.png)
+
+4. 子查询
+
+   把一个查询结果当做另一个查询的条件
+
+   子查询分三类：
+
+   - 标量子查询：子查询返回的结果是一个数据（一行一列）
+   - 列子查询：返回的结果是一列（一列多行）
+   - 行子查询：返回的结果是一行（一行多列）
+     1. ​	查询高于平均身高的信息（height）
+        1. select avg(height) from students
+        2. select * from students where height > (select avg(height) from students)
+     2. 查询学生的班级号能够对应的学生名字
+        1. select id from classes
+        2. select name from students where cls_id in (select id from classes)
+
+
+
+## MySQL进阶
+
+### 1、MySQL实战操作
+
+![image-20250226202333098](img/image-20250226202333098.png)
+
+1. 查询类型cate_name 为'超极本' 的商品名称name、price（where）
+
+   - select name,price from goods where cate_name='超极本'
+
+2. 显示商品种类
+
+   - select cate_name group by cate_name
+   - select distint cate_name from goods (去重)
+
+3. 求所有电脑产品平均值，并保留两位小数
+
+   - select round(avg(price),2) from goods
+
+4. 显示每种cate_name的平均价
+
+   - select round(avg(price),2),cate_name from goods group by cate_name
+
+5. 查询每种类型的商品中，最贵max、最便宜min、平均价avg、数量count
+
+   - select cate_name max(price) min(price),avg(price),count(*) from goods group by cate_name
+
+6. 查询所有价格大于平均价格的商品，并且按降价排序
+
+   - select * from goods where price > (select avg(price) from goods) order by price desc
+
+7. 查询每种类型中最贵的电脑信息
+
+   - select **max(price) as max_price**,cate_name from goods  group by cate_name
+   - select * from goods 
+     inner join 
+     (select **max(price) as max_price**,cate_name from goods  group by cate_name) as max_price_goods
+     on goods.cate_name=max_price_goods.cate_name and goods.price=max_price_goods.max_price
+
+   
+
+1. 删除异常
+
+   ![image-20250226204330192](img/image-20250226204330192.png)
+
+2. 信息表优化
+
+   ![image-20250226204602636](img/image-20250226204602636.png)
+
+   ![image-20250226204608800](img/image-20250226204608800.png)
+
+   1. 创建表
+
+      ![image-20250226205433010](img/image-20250226205433010.png)
+
+   2. 同步商品分类表 数据，将商品所有（种类信息）写入到（商品种类表）中
+
+      ![image-20250226205448134](img/image-20250226205448134.png)
+
+   3. 同步商品表 数据 通过goods_cates 数据表来更新goods
+
+      ![image-20250226205602124](img/image-20250226205602124.png)
+
+   4. 修改表结构
+
+      ![image-20250226205633948](img/image-20250226205633948.png)
+
+
+
+### 2、外键使用
+
+![image-20250226205940521](img/image-20250226205940521.png)
+
+外键：限制约束无效数据，防止无效信息插入（但是添加多了会降低效率）
+
+语法：**alter table** goods add **foreign key**(cate_id) **references** goods_cates(id);
+
+取消语法：
+
+- 首先获取外键约束名称，该名称系统会自动生成，可以通过查看表创还能语句来获取名称
+  - show create table goods
+- 获取名称之后就可以根据名称来删除外键约束
+  - alter table goods drop foreign key goods_ibfk_1;
+
+
+
+### 3、视图
+
+视图概念，什么是视图
+
+视图就是一个能把复杂SQL语句功能封装起来的一个虚表，所以在创建视图时，主要工作就在创建这条SQL查询的语句上。视图是对若干张表的引用，一张虚表，不存储具体的数据（基本表数据发生了改变，视图也会跟着改变）
+
+视图的好处：方便操作，特别是查询操作，减少复杂的SQL语句，增强可用性，复用性；
+
+
+
+视图的使用
+
+- 定义视图
+
+  - create view 视图名称 as select 语句
+
+- 查看视图
+
+  - show tables
+
+- 使用视图
+
+  - select * from v_goods_info
+
+- 删除视图
+
+  - drop view 视图名称
+
+    ![image-20250226230516909](img/image-20250226230516909.png)
+
+    
+
+    ![image-20250226230429486](img/image-20250226230429486.png)
+
