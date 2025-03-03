@@ -18,5 +18,5 @@ while True:
     # print(event)
     if event.type == pygame.QUIT:
       # 退出游戏
-      # pygame.quit()
+      pygame.quit()
       exit()

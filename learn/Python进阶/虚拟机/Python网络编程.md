@@ -2752,3 +2752,86 @@ sum_num(1,2) # 输出 3
 
 
 
+### 3、带有参数的装饰器
+
+~~~python
+def logging (fn):
+  def inner(*args,**kwargs):
+    fn(*args,**kwargs)
+  return inner 
+# 使用装饰器装饰函数
+@logging
+def sum_num(*args,**kwargs):
+  print(args,kwargs)
+
+sum_num(1,2,3,age="18") # 输出 (1, 2, 3) {'age': '18'}
+~~~
+
+~~~python
+# 带有参数的装饰器就是使用装饰器装饰函数的时候可以传入指定参数
+# 注意外部函数只能有一个参数
+def logging(flag):
+  # 内部函数
+  def decorator(fn):
+    def inner(num1,num2):
+      if flag == "+":
+        print(f"Adding {num1} and {num2}")
+      elif flag == "-":
+        print(f"Subtracting {num1} and {num2}")
+      result = fn(num1,num2)
+      return result
+    return inner
+  return decorator
+
+# 1 logging("+") 2 @decorator起装饰器作用
+@logging("+")
+def add(a,b):
+  result = a + b
+  return result
+
+@logging("-")
+def sub(a,b):
+  result = a - b
+  return result
+~~~
+
+
+
+### 4、类装饰器
+
+____call____方法使用：
+
+一个类里面一旦实现了call方法，那么这个类创建的对象就是一个可调用的对象，可以像调用函数一样调用
+
+~~~python
+# from typing import Any
+
+
+# class Check(object):
+#   def __call__(self, *args: Any, **kwds: Any) -> Any:
+#     print("Check.__call__")
+#     pass
+
+# c = Check()
+# # 直接函数调用会直接调用__call__方法
+# c()
+
+#定义类装饰器
+from typing import Any
+
+
+class Check(object):
+  def __init__(self, func):
+    self.func = func
+
+  def __call__(self, *args: Any, **kwds: Any) -> Any:
+    print("登录")
+    pass
+
+@Check   # comment = Check(comment)
+def comment():
+  print("评论")
+
+comment()
+~~~
+
