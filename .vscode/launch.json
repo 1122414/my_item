@@ -13,6 +13,7 @@
       "externalConsole": true,
       "MIMode": "gdb",
       "miDebuggerPath": "D:\\mingw64\\mingw64\\bin\\gdb.exe",
+
       "setupCommands": [
         {
           "description": "为 gdb 启用整齐打印",
@@ -22,6 +23,24 @@
         {
           "description": "将反汇编风格设置为 Intel",
           "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        },
+        // 添加以下命令：跳过系统库和标准库函数
+        // ...原有配置...
+        {
+          "text": "-interpreter-exec console \"skip -gfi D:/mingw64/mingw64/include/c++/**\"",
+          "ignoreFailures": true
+        },
+        {
+          "text": "-interpreter-exec console \"skip -gfi D:/mingw64/mingw64/include/c++/tr1/**\"",
+          "ignoreFailures": true
+        },
+        {
+          "text": "-interpreter-exec console \"skip -gfi D:/mingw64/mingw64/lib/gcc/x86_64-w64-mingw32/**\"",
+          "ignoreFailures": true
+        },
+        {
+          "text": "-interpreter-exec console \"skip -gfi D:/mingw64/mingw64/x86_64-w64-mingw32/include/**\"",
           "ignoreFailures": true
         }
       ],
@@ -39,7 +58,7 @@
       "preLaunchTask": "check-python-file"
     }
   ],
-
+  "justMyCode": true, // 新增此配置项
   "compounds": [
     {
       "name": "Auto Switch Debugger",
@@ -61,4 +80,5 @@
   "terminator": {
     "killTerminalsOnSessionEnd": true // 强制终止残留终端
   }
+  // "justMyCode": true
 }
