@@ -1,7 +1,7 @@
-#include<iostream>
+﻿#include<iostream>
 using namespace std;
 int main(){
-  cout << "芜湖" << endl;
+  cout << "你好" << endl;
   system("pause");
   return 0;
 }

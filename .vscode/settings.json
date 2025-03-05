@@ -48,7 +48,8 @@
     "sstream": "cpp",
     "set": "cpp",
     "map": "cpp",
-    "cstring": "cpp"
+    "cstring": "cpp",
+    "ctime": "cpp"
   },
   "code-runner.executorMap": {
     "cpp": "cd /d \"$dir\" && (if not exist output mkdir output) && g++ \"$fileName\" -o \"output\\$fileNameWithoutExt.exe\" && call \"output\\$fileNameWithoutExt.exe\""
