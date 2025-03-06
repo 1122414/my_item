@@ -40,11 +40,9 @@ def generate_obstacles(grid, num_obstacles, obstacle_size):
 
     return obstacles
 
-
 # A*算法实现
 def a_star(graph, start, goal):
     return nx.astar_path(graph, start, goal)
-
 
 # 绘制六边形
 def draw_hexagon(ax, q, r, color='white'):
@@ -61,7 +59,6 @@ def draw_hexagon(ax, q, r, color='white'):
     ], closed=True, edgecolor='black', facecolor=color)
     ax.add_patch(hexagon)
 
-
 # 计算距离（最少格子数）
 def calculate_distance(graph, start, goal):
     try:
@@ -69,7 +66,6 @@ def calculate_distance(graph, start, goal):
         return len(path) - 1  # 距离为路径长度减1
     except nx.NetworkXNoPath:
         return float('inf')  # 如果无法到达目标点，返回无穷大
-
 
 # 计算概率
 def calculate_probability(current_node, goals, graph, distance_record):
@@ -121,6 +117,7 @@ def calculate_probability(current_node, goals, graph, distance_record):
     
     return probabilities
 
+# 改进版基础距离算法
 def base_distance_algorithm(current_node, goals, graph):
     """改进版基础距离算法"""
     # 计算到各目标的距离
@@ -143,8 +140,7 @@ def base_distance_algorithm(current_node, goals, graph):
     probabilities = [(w + alpha)/total for w in weights]
     return probabilities
 
-
-# 2025.3.6改进版
+# 改进版步长花费算法（累积奖励+方向一致性）
 def step_cost_algorithm(current_node, goals, graph, prev_node, history_steps=5, alpha=0.8):
     """改进版步长花费算法（累积奖励+方向一致性）"""
     if not prev_node:  # 初始状态
@@ -217,7 +213,6 @@ def bfs_shortest_distance(graph, start):
                 queue.append(neighbor)
     return distances
 
-
 # 动画更新函数
 def update(frame):
     # 初始化持久化存储结构
@@ -283,7 +278,9 @@ def update(frame):
             current_goal = random.choice([g for g in goals if g in graph.nodes])
             path = a_star(graph, current_position, current_goal)
             path_index = 0
-            trajectory.clear()  # 仅清除轨迹，不重置概率数据
+            # 如果目标点数大于 goal_num 则清空轨迹
+            if len(goals)>=goal_num:
+                trajectory.clear()  # 仅清除轨迹，不重置概率数据
         except:
             path = [start]
             path_index = 0
@@ -331,7 +328,7 @@ def update(frame):
         ax2.plot(x, y_step, color='red', linestyle=':', label='Step Cost')
         
         # 动态显示最近30帧
-        if len(x) > 30:
+        if len(x) > frame_num:
             ax2.set_xlim(x[-30], x[-1]+1)
         else:
             ax2.set_xlim(x[0]-1, x[-1]+1)
@@ -393,6 +390,14 @@ if __name__ == "__main__":
     current_goal = random.choice(goals)  # 随机选择一个目标点
     global distance_record 
     distance_record = {goal: [] for goal in goals}  # 用于记录每个目标点到起点的距离
+
+    # 当目标点数大于goal_num时，则清空小球轨迹
+    global goal_num
+    goal_num = 4
+
+    # 动态显示最近frame_num帧
+    global frame_num
+    frame_num = 30
 
     path = a_star(graph, start, current_goal)
     path_index = 0
