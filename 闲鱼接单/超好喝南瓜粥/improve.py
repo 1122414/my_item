@@ -73,6 +73,9 @@ def calculate_distance(graph, start, goal):
 
 # 计算概率
 def calculate_probability(current_node, goals, graph, distance_record):
+    # 步长，即过去n步的记录
+    n = 3
+
     # 更改部分
     # 计算到各目标的距离
     distances = [calculate_distance(graph, current_node, goal) for goal in goals]
@@ -88,12 +91,18 @@ def calculate_probability(current_node, goals, graph, distance_record):
             return tuple(prob)
     # 初始化所有theta为默认值
     thetas = [np.pi/2] * len(goals)
+    # 初始化
+    d_map_pi = 1.0  
     # 当有足够历史数据时计算趋势
-    if len(distance_record[goals[0]]) >= 5:
-        x = [1, 2, 3, 4, 5]  # 时间序列
+    if len(distance_record[goals[0]]) >= n:
+        x = list(range(1,n+1))  # 时间序列
         for i in range(len(goals)):
             # 获取最近5个距离值
-            y = distance_record[goals[i]][-5:]
+            y = distance_record[goals[i]][-n:]
+            # 步长映射
+            d_change = y[0]-y[n-1]
+            d_map_pi = math.pi*(d_change+n)/n
+
             # 计算线性回归系数
             coef = np.polyfit(x, y, 1)[0]
             # 计算角度（趋势方向）
@@ -104,76 +113,13 @@ def calculate_probability(current_node, goals, graph, distance_record):
         x = distances[i]
         theta = thetas[i]
         # 权重计算公式（可根据需要调整系数）
-        weight = (1 / (x**2 + 1)) * (0.6 * np.cos(theta)**2 + 1.4 * np.cos(theta) + 1)
+        weight = d_map_pi * (1 / (x**2 + 1)) * (0.6 * np.cos(theta)**2 + 1.4 * np.cos(theta) + 1)
         weights.append(weight)
     # 归一化处理
     total = sum(weights)
     probabilities = [w/total for w in weights]
     
-    return tuple(probabilities)
-
-    # region
-    # x1 = calculate_distance(graph, current_node, goals[0])  # 到目标点1的距离
-    # x2 = calculate_distance(graph, current_node, goals[1])  # 到目标点2的距离
-    # x3 = calculate_distance(graph, current_node, goals[2])  # 到目标点3的距离
-    # x4 = calculate_distance(graph, current_node, goals[3])  # 到目标点4的距离
-    # x5 = calculate_distance(graph, current_node, goals[4])  # 到目标点5的距离
-
-    # distance_record[goals[0]].append(x1)  # 记录每次计算的最短距离
-    # distance_record[goals[1]].append(x2)
-    # distance_record[goals[2]].append(x3)
-    # distance_record[goals[3]].append(x4)
-    # distance_record[goals[4]].append(x5)
-
-    # # 如果小球到达目标点1
-    # if x1 == 0:
-    #     return 1.0, 0.0, 0.0, 0.0, 0.0  # 概率为1和0
-    # # 如果小球到达目标点2
-    # if x2 == 0:
-    #     return 0.0, 1.0, 0.0, 0.0, 0.0  # 概率为0和1
-    # # 如果小球到达目标点3
-    # if x3 == 0:
-    #     return 0.0, 0.0, 1.0, 0.0, 0.0  # 概率为0和1
-    # # 如果小球到达目标点4
-    # if x4 == 0:
-    #     return 0.0, 0.0, 0.0, 1.0, 0.0  # 概率为0和1
-    # # 如果小球到达目标点5
-    # if x5 == 0:
-    #     return 0.0, 0.0, 0.0, 0.0, 1.0  # 概率为0和1
-
-
-    # # 计算概率
-    # if len(distance_record[goals[0]]) >= 5:  # 依据过5步，通过一元线性回归做方向判断
-    #     x = [1, 2, 3, 4, 5]
-    #     y1 = distance_record[goals[0]][len(distance_record[goals[0]]) - 5: len(distance_record[goals[0]]) - 1]
-    #     y2 = distance_record[goals[1]][len(distance_record[goals[1]]) - 5: len(distance_record[goals[1]]) - 1]
-    #     y3 = distance_record[goals[3]][len(distance_record[goals[3]]) - 5: len(distance_record[goals[3]]) - 1]
-    #     y4 = distance_record[goals[4]][len(distance_record[goals[4]]) - 5: len(distance_record[goals[4]]) - 1]
-    #     y5 = distance_record[goals[5]][len(distance_record[goals[5]]) - 5: len(distance_record[goals[5]]) - 1]
-
-    #     coef1 = np.polyfit(x, y1, 1)[0]
-    #     coef2 = np.polyfit(x, y2, 1)[0]
-    #     coef3 = np.polyfit(x, y3, 1)[0]
-    #     coef4 = np.polyfit(x, y4, 1)[0]
-    #     coef5 = np.polyfit(x, y5, 1)[0]
-
-    #     theta1 = np.arctan(coef1)
-    #     theta2 = np.arctan(coef2)
-    #     theta3 = np.arctan(coef3)
-    #     theta4 = np.arctan(coef4)
-    #     theta5 = np.arctan(coef5)
-
-    # else:
-    #     theta1 = theta2 = np.pi / 2
-    # m = 1 / (x1 ** 2 + 1) * (0.6 * cos(theta1) ** 2 + 1.4 * cos(theta1) + 1)
-    # n = 1 / (x2 ** 2 + 1) * (0.6 * cos(theta2) ** 2 + 1.4 * cos(theta2) + 1)
-    # total = m + n
-    # m /= total
-    # n /= total
-    # return m, n
-    #endregion
-
-# 在calculate_probability函数后添加两个新算法
+    return probabilities
 
 def base_distance_algorithm(current_node, goals, graph):
     """改进版基础距离算法"""
@@ -197,20 +143,6 @@ def base_distance_algorithm(current_node, goals, graph):
     probabilities = [(w + alpha)/total for w in weights]
     return probabilities
 
-# 2025.3.6 与我的算法重合
-# def base_distance_algorithm(current_node, goals, graph):
-#     """基础距离算法"""
-#     distances = [calculate_distance(graph, current_node, goal) for goal in goals]
-#     weight = [1/(d**2 + 1) for d in distances]
-#     total = sum(weight)
-#     return [w/total for w in weight]
-#     # # 计算指数值（带数值稳定性处理）
-#     # max_V = max(-d for d in distances)
-#     # exp_values = [math.exp(-d - max_V) for d in distances]  # 防止数值溢出
-#     # # 计算总和
-#     # total = sum(exp_values)
-#     # 归一化处理
-#     # return [ev/total for ev in exp_values]
 
 # 2025.3.6改进版
 def step_cost_algorithm(current_node, goals, graph, prev_node, history_steps=5, alpha=0.8):
@@ -271,25 +203,6 @@ def step_cost_algorithm(current_node, goals, graph, prev_node, history_steps=5, 
     
     return [er/total for er in exp_rewards]
 
-# def step_cost_algorithm(current_node, goals, graph, prev_node):
-#     """步长花费算法"""
-#     if not prev_node:  # 初始状态没有前一个节点
-#         return [1.0/len(goals)]*len(goals)
-    
-#     costs = []
-#     for i, goal in enumerate(goals):
-#         # 原始最短距离
-#         orig_dist = calculate_distance(graph, prev_node, goal)
-#         # 移动后距离
-#         new_dist = calculate_distance(graph, current_node, goal)
-#         cost = orig_dist - new_dist
-#         costs.append(max(cost, 0))  # 负成本视为0
-    
-#     total = sum(math.e**c for c in costs)
-#     if total == 0:
-#         return [1.0/len(goals)]*len(goals)  # 平均概率
-#     return [math.e**c/total for c in costs]
-
 # 广度优先搜索计算最短距离
 def bfs_shortest_distance(graph, start):
     distances = {node: float('inf') for node in graph.nodes}
@@ -307,42 +220,40 @@ def bfs_shortest_distance(graph, start):
 
 # 动画更新函数
 def update(frame):
-    # 用frame作为x轴基准，避免时间点重置
-    if not hasattr(update, "x_values"):
-        update.x_values = []  # 持久化存储x轴值
-        update.last_frame = 0  # 记录最后处理的帧号
+    # 初始化持久化存储结构
+    if not hasattr(update, "storage"):
+        update.storage = {
+            'x_values': [],
+            'prob_records': {
+                'my_algo': [],
+                'base_dist': [],
+                'step_cost': []
+            },
+            'last_processed_frame': -1
+        }
 
-    # 处理跳帧情况（当动画间隔导致跳帧时）
-    current_frames = list(range(update.last_frame + 1, frame + 1))
-    update.x_values.extend(current_frames)
-    update.last_frame = frame
+    # 处理跳帧（填充缺失帧数据）
+    current_frames = list(range(update.storage['last_processed_frame']+1, frame+1))
+    for f in current_frames:
+        update.storage['x_values'].append(f)
+        for algo in ['my_algo', 'base_dist', 'step_cost']:
+            if len(update.storage['prob_records'][algo]) == 0:
+                update.storage['prob_records'][algo].append(None)
+            else:
+                update.storage['prob_records'][algo].append(
+                    update.storage['prob_records'][algo][-1]
+                )
     
-    # 在update函数开头添加样式设置
-    # plt.style.use('seaborn')  # 使用更清晰的绘图样式
-    colors = ['yellow', 'green', 'red', 'purple', 'orange']
-    global path_index, current_goal, path, trajectory, prob_records, probabilities, yplus_values, time_points, prev_node, recorded_frames
-    # 初始化时确保数据结构有效
-    if not time_points:
-        time_points[:] = []
-        prob_records['my_algo'][:] = []
-        prob_records['base_dist'][:] = []
-        prob_records['step_cost'][:] = []
+    # 更新最后处理的帧号
+    update.storage['last_processed_frame'] = frame
+
+    # 全局变量声明
+    global path_index, current_goal, path, trajectory, prev_node, distance_record
     
-    # 在绘制前检查数据同步
-    min_len = min(len(time_points), 
-                 len(prob_records['my_algo']),
-                 len(prob_records['base_dist']),
-                 len(prob_records['step_cost']))
-    
-    # 同步裁剪数据
-    time_points = time_points[:min_len]
-    prob_records['my_algo'] = prob_records['my_algo'][:min_len]
-    prob_records['base_dist'] = prob_records['base_dist'][:min_len]
-    prob_records['step_cost'] = prob_records['step_cost'][:min_len]
-    
-    ax1.clear()  # 清空棋盘
-    ax2.clear()  # 清空概率图
-    ax3.clear()  # 清空最短距离图
+    # 清空画布
+    ax1.clear()
+    ax2.clear()
+    ax3.clear()
 
     # 隐藏坐标轴
     ax1.set_xticks([])
@@ -356,150 +267,98 @@ def update(frame):
     for node in grid:
         color = 'white'
         if node in [item for sublist in obstacles for item in sublist]:
-            color = 'gray'  # 障碍物
+            color = 'gray'
         if node == start:
-            color = 'blue'  # 起点
+            color = 'blue'
         if node in goals:
             idx = goals.index(node)
-            color = colors[idx]  # 目标点
+            color = ['yellow', 'green', 'red', 'purple', 'orange'][idx]
         draw_hexagon(ax1, node[0], node[1], color)
         draw_hexagon(ax3, node[0], node[1], color)
 
     # 每隔10秒重新选择目标点
     if frame % 10 == 0 and frame != 0:
         try:
-            # 确保使用有效路径节点
             current_position = path[path_index] if path_index < len(path) else start
             current_goal = random.choice([g for g in goals if g in graph.nodes])
             path = a_star(graph, current_position, current_goal)
-            path_index = 0  # 重置后从0开始
-        except Exception as e:
-            print(f"路径重置失败: {str(e)}")
-            path = [start]  # 重置路径
             path_index = 0
-        # 清空数据时保持引用
-        del prob_records['my_algo'][:]
-        del prob_records['base_dist'][:]
-        del prob_records['step_cost'][:]
-        time_points.clear()
-        recorded_frames.clear()
-        # prob_records['my_algo'].clear()
-        # prob_records['base_dist'].clear()
-        # prob_records['step_cost'].clear()
-        # time_points.clear()
-        # recorded_frames.clear()
+            trajectory.clear()  # 仅清除轨迹，不重置概率数据
+        except:
+            path = [start]
+            path_index = 0
 
-    # 计算概率
-    distance_record = {goal: [] for goal in goals}  # 为每个目标创建记录列表
-    # 绘制小球的轨迹
+    # 更新小球位置
     if path_index < len(path) and path_index >= 0:
         current_node = path[path_index]
-        # 强制同步记录（每个移动步骤都记录）
+        trajectory.append(current_node)
+        
+        # 计算三种算法的概率
+        # my_prob = float(calculate_probability(current_node, goals, graph, {g:[] for g in goals})[0])
+        # 只要目标点1的概率
         my_prob = float(calculate_probability(current_node, goals, graph, distance_record)[0])
         base_prob = float(base_distance_algorithm(current_node, goals, graph)[0])
         step_prob = float(step_cost_algorithm(current_node, goals, graph, prev_node)[0])
-        
-        prob_records['my_algo'].append(my_prob)
-        prob_records['base_dist'].append(base_prob)
-        prob_records['step_cost'].append(step_prob)
-        time_points.append(frame)
-        recorded_frames.add(frame)
+        prev_node = current_node
 
-        trajectory.append(current_node)  # 记录轨迹
+        # 更新当前帧的真实数据
+        current_idx = len(update.storage['x_values']) - 1
+        update.storage['prob_records']['my_algo'][current_idx] = my_prob
+        update.storage['prob_records']['base_dist'][current_idx] = base_prob
+        update.storage['prob_records']['step_cost'][current_idx] = step_prob
+
+        # 绘制小球和轨迹
         draw_hexagon(ax1, current_node[0], current_node[1], 'red')
-        draw_hexagon(ax3, current_node[0], current_node[1], 'red')  # 小球
+        draw_hexagon(ax3, current_node[0], current_node[1], 'red')
+        if len(trajectory) > 1:
+            x_coords = [n[0]*np.sqrt(3)+n[1]*np.sqrt(3)/2 for n in trajectory]
+            y_coords = [n[1]*1.5 for n in trajectory]
+            ax1.plot(x_coords, y_coords, color='orange', linewidth=2)
+            ax3.plot(x_coords, y_coords, color='orange', linewidth=2)
+        
         path_index += 1
 
-    # 绘制小球的轨迹线
-    if len(trajectory) > 1:
-        x_coords = [node[0] * np.sqrt(3) + node[1] * np.sqrt(3) / 2 for node in trajectory]
-        y_coords = [node[1] * 1.5 for node in trajectory]
-        ax1.plot(x_coords, y_coords, color='orange', linewidth=2)
-        ax3.plot(x_coords, y_coords, color='orange', linewidth=2)
-
-    if path_index < len(path) and path_index > 0:
-        current_node = path[path_index]
-
-        # 计算概率
-        probs = calculate_probability(current_node, goals, graph, distance_record)
-
-        # 记录数据
-        for i in range(len(goals)):
-            probabilities[i].append(probs[i])
-        time_points.append(frame)
+    # 绘制概率曲线
+    valid_indices = [i for i, v in enumerate(update.storage['prob_records']['my_algo']) if v is not None]
+    if valid_indices:
+        x = np.array(update.storage['x_values'])[valid_indices]
+        y_my = np.array(update.storage['prob_records']['my_algo'])[valid_indices]
+        y_base = np.array(update.storage['prob_records']['base_dist'])[valid_indices]
+        y_step = np.array(update.storage['prob_records']['step_cost'])[valid_indices]
         
-    # 计算三种算法的概率
-    current_node = path[path_index] if path_index < len(path) else start
-    
-    # 原算法
-    my_probs = calculate_probability(current_node, goals, graph, distance_record)
-    
-    # 基础距离算法
-    base_probs = base_distance_algorithm(current_node, goals, graph)
-    
-    # 步长花费算法
-    step_probs = step_cost_algorithm(current_node, goals, graph, prev_node)
-    prev_node = current_node  # 更新前节点
-
-    # 记录目标1的概率
-    # for algo, probs in zip(['my_algo', 'base_dist', 'step_cost'], 
-    #                       [my_probs, base_probs, step_probs]):
-    #     prob_records[algo][0].append(probs[0])  # 只记录目标1
-    for algo, prob in zip(['my_algo', 'base_dist', 'step_cost'], 
-                     [my_probs[0], base_probs[0], step_probs[0]]):
-        prob_records[algo].append(prob)  # 直接记录目标1的概率值
-
-
-    # 绘制概率的折线图
-    # colors = ['yellow', 'green', 'red', 'purple', 'orange']
-    # for i in range(len(goals)):
-    #     ax2.plot(time_points, probabilities[i], 
-    #             color=colors[i], 
-    #             label=f'Goal {i+1} Probability')
+        ax2.plot(x, y_my, color='blue', label='My Algorithm')
+        ax2.plot(x, y_base, color='green', linestyle='--', label='Base Distance')
+        ax2.plot(x, y_step, color='red', linestyle=':', label='Step Cost')
         
-    # # 绘制曲线时直接使用当前记录
-    # ax2.plot(np.array(time_points), np.array(prob_records['my_algo']), color='blue', label='My Algorithm')
-    # ax2.plot(np.array(time_points), np.array(prob_records['base_dist']), color='green', linestyle='--', label='Base Distance')
-    # ax2.plot(np.array(time_points), np.array(prob_records['step_cost']), color='red', linestyle=':', label='Step Cost')
-    # 在绘图前添加强制同步
-    min_len = min(len(time_points), 
-                len(prob_records['my_algo']),
-                len(prob_records['base_dist']),
-                len(prob_records['step_cost']))
-
-    # 生成安全索引
-    x = np.arange(min_len)
-    if min_len > 0:
-        ax2.plot(x, prob_records['my_algo'][:min_len], color='blue', label='My Algorithm')
-        ax2.plot(x, prob_records['base_dist'][:min_len], color='green', linestyle='--', label='Base Distance')
-        ax2.plot(x, prob_records['step_cost'][:min_len], color='red', linestyle=':', label='Step Cost')
+        # 动态显示最近30帧
+        if len(x) > 30:
+            ax2.set_xlim(x[-30], x[-1]+1)
+        else:
+            ax2.set_xlim(x[0]-1, x[-1]+1)
     else:
-        ax2.text(0.5, 0.5, 'No Data', ha='center', va='center')  # 空数据提示
-
-    # ax2.plot(time_points, probabilities, color='blue', label='Mine Algorithm Probability to Goal 1')
-    ax2.set_xlabel('Time')
-    ax2.set_ylabel('Value')
+        ax2.text(0.5, 0.5, 'Waiting for data...', ha='center', va='center')
+    
     ax2.set_ylim(0, 1)
-    # 修改图例位置和样式
-    ax2.legend(loc='upper right', frameon=True, shadow=True)
-    # 添加网格线
+    ax2.set_xlabel('Frame')
+    ax2.set_ylabel('Probability')
+    ax2.legend(loc='upper right')
     ax2.grid(True, alpha=0.3)
-    # 设置标题
-    ax2.set_title("Goal 1 Probability Comparison", fontsize=12)
+    ax2.set_title("Goal 1 Probability Comparison")
 
     # 绘制最短距离图
-    max_distance = max(amin_distances.values())  # 最大距离
+    max_distance = max(amin_distances.values())
     for node in grid:
         if node not in [item for sublist in obstacles for item in sublist] and node not in goals:
-            x = node[0] * np.sqrt(3) + node[1] * np.sqrt(3) / 2
+            x = node[0] * np.sqrt(3) + node[1] * np.sqrt(3)/2
             y = node[1] * 1.5
             distance = amin_distances[node]
-            color = cmap(distance / max_distance)  # 根据距离设置颜色
+            color = cmap(distance / max_distance)
             draw_hexagon(ax3, node[0], node[1], color)
             ax3.text(x, y, f"{distance}", ha='center', va='center', fontsize=3)
 
     plt.title(f"Frame: {frame}")
     return ax1, ax2, ax3
+
 
 
 if __name__ == "__main__":
@@ -512,6 +371,7 @@ if __name__ == "__main__":
 
     # 将地图变大、目标变多
     goals = [(size, -size, 0), (0, size, -size),  (0, -size, size), (size, 0, -size), (-size, size, 0), ]  # 五个目标点 更改
+    # goals = [(size, -size, 0), (0, size, -size),   ]  # 五个目标点 更改
 
     grid = generate_hexagonal_grid(size)
     obstacles = generate_obstacles(grid, 4, 2)
@@ -531,26 +391,14 @@ if __name__ == "__main__":
 
     # 初始化路径
     current_goal = random.choice(goals)  # 随机选择一个目标点
+    global distance_record 
+    distance_record = {goal: [] for goal in goals}  # 用于记录每个目标点到起点的距离
+
     path = a_star(graph, start, current_goal)
     path_index = 0
     trajectory = []  # 用于存储小球的轨迹
 
     recorded_frames = set()  # 用于跟踪已记录帧
-    # 修改prob_records初始化结构
-    prob_records = {
-        'my_algo': list(),
-        'base_dist': list(),
-        'step_cost': list()
-    }
-    time_points = list()
-    recorded_frames = set()
-
-    # 概率初始化
-    # prob_records = {
-    #     'my_algo': [[] for _ in goals],   # 原算法
-    #     'base_dist': [[] for _ in goals], # 基础距离算法
-    #     'step_cost': [[] for _ in goals]  # 步长花费算法
-    # }
     prev_node = None  # 添加历史节点追踪
 
     probabilities = [[] for _ in goals]  # 每个目标一个概率列表
@@ -566,5 +414,14 @@ if __name__ == "__main__":
     cmap = LinearSegmentedColormap.from_list("custom_cmap", colors)
     # 创建动画
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24, 8))
-    ani = animation.FuncAnimation(fig, update, frames=100, interval=100, blit=False)  # 100帧，每秒1帧
+    # ani = animation.FuncAnimation(fig, update, frames=100, interval=100, blit=False)  # 100帧，每秒1帧
+    ani = animation.FuncAnimation(
+    fig, 
+    update, 
+    frames=None,  # 使用生成器无限生成帧
+    interval=100,
+    blit=False,
+    repeat=False,  # 禁用循环
+    save_count=1000  # 适当调大缓存
+    )
     plt.show()
