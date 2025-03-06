@@ -1,0 +1,29 @@
+requests模块
+  - urllib模块
+  - requests模块
+
+requests模块python中原生的一款基于网络请求的模块，功能强大，简单便捷，效率高。
+作用：发送HTTP/HTTPS请求，获取响应内容，处理响应内容，提取数据等，模拟浏览器发请求。
+
+如何使用：
+  1. 安装requests模块：pip install requests
+  2. 导入requests模块：import requests
+  3. 发送请求：response = requests.get(url)
+  4. 获取响应内容：response.text
+  5. 处理响应内容：json.loads(response.text)
+  6. 提取数据：soup = BeautifulSoup(response.text, 'html.parser')
+
+实战编码：
+  - 爬取搜狗首页：http://www.sogou.com/
+  - 爬取百度搜索结果：https://www.baidu.com/s?wd=python
+  - 爬取豆瓣图书：https://book.douban.com/top250
+  - 爬取豆瓣电影：https://movie.douban.com/top250
+  - 爬取哔哩哔哩视频：https://www.bilibili.com/video/BV1ZK411H74t
+  - 爬取知乎热榜：https://www.zhihu.com/billboard
+  - 爬取微博热搜：https://s.weibo.com/top/summary
+
+实战巩固：
+  - 需求：爬取搜狗制定词条对应的搜索结果页面（简易网页采集器）
+  - 需求：破解百度翻译
+  - 需求：爬取豆瓣电影分类排行榜：https://movie.douban.com/中的电影详情数据
+  - 需求：爬取肯德基餐厅产讯http:www.kfc.com.cn/kfccda/index.aspx中指定地点的餐厅数量

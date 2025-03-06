@@ -1,0 +1,99 @@
+聚焦爬虫：爬取页面中指定页面内容
+
+数据解析分类：
+  - 正则
+  - bs4
+  - xpath
+
+数据解析原理概述：
+  - 解析的局部文本内容都会在标签之间或者标签对应的属性中进行存储
+  - 进行指定标签的定位
+  - 标签或者标签对应的属性表中存储的数据值进行提取（解析）
+
+正则解析
+bs4解析
+  - 数据解析原理概述：
+    - 1.标签定位
+    - 2.标签属性提取
+  - bs4数据解析原理
+    - 1.创建BeautifulSoup对象
+    - 2.使用find()方法定位标签
+    - 3.使用find_all()方法定位多个标签
+    - 4.使用select()方法定位标签
+    - 5.使用select_one()方法定位单个标签
+    - 6.使用标签属性提取
+  - 环境安装
+    - pip install beautifulsoup4
+    - pip install lxml
+  - 如何实例化对象
+    - from bs4 import BeautifulSoup
+    - 对象实例化 soup = BeautifulSoup(html_text, 'lxml')
+    - 1.将本地html文档中的数据加载到该对象中
+    - 2.将互联网上获取的页面源码加载到该对象中
+
+    # soup.tagName 返回的是html中第一次出现的tagNmae标签
+    # soup.select('tagName') 返回的是html中所有tagName标签
+    # soup.select_one('tagName') 返回的是html中第一次出现的tagName标签
+    # soup.find('tagName') 返回的是html中第一个tagName标签 == soup.tagName
+    # soup.find_all('tagName') 返回的是html中所有tagName标签
+    # soup.find('tagName', attrs={'属性名': '属性值'}) 返回的是html中第一个tagName标签中属性名为属性值属性的标签
+      #例：soup.find('div', class_/id/attrs='song') 
+    # soup.find_all('div', class_/id/attrs='song') 
+    # soup.select('div[class="song"]') 返回的是html中所有class为song的div标签，返回一个数组
+      # 例： soup.select('.tang>ul>li>a')  >为直系
+      # 例： soup.select('ul li a') 空格为任意层级
+      # 例： soup.select('ul li a')[0].string 获取直系文本内容
+      # 例： soup.select('ul li a')[0].text 获取所有文本内容
+
+
+xpath解析:最常用且最便捷高效的一种解析方式。通用性强，适用于各种复杂的页面结构。
+  - xpath解析原理概述：
+    - 1.实例化一个etree对象，且需要将被解析的页面源码数据加载到该对象中。
+    - 2.调用etree对象的xpath()方法结合者xpath表达式实现标签的定位和内容的捕获
+
+  - 环境安装
+    - pip install lxml 解析器
+
+  -如何实例化一个etree对象：from lxml import etree
+    - 1.将本地html文档中的源码数据加载到etree对象中
+      etree.parse(file_path)
+    - 2.将互联网上获取的页面源码数据加载到etree对象中
+      etree.HTML(html_text)
+    - xpath(xpath表达式)
+  - xpath表达式：
+    - 1.定位标签：
+      - / 根节点
+      - // 表示多个层级，可以从任意位置表示
+      - . 自身节点
+      - 标签名 标签名
+      - 属性名[@属性值]  tagName[@attrName='attrValue']
+      - 属性名[contains(@属性值, '关键字')] 属性名包含关键字
+      - 属性名[starts-with(@属性值, '关键字')] 属性名以关键字开头
+      - 属性名[ends-with(@属性值, '关键字')] 属性名以关键字结尾
+
+    - 2.获取标签内容：
+      - 标签名/text() 获取标签内所有文本内容
+      - 标签名/string() 获取标签内直系文本内容
+      - 标签名/@属性名 获取标签的属性值
+      - 标签名/@属性名='属性值' 获取标签的属性值
+      - 标签名/属性名 获取标签的属性值
+      - 标签名/属性名='属性值' 获取标签的属性值
+
+      - 标签名[序号] 获取标签的第n个子节点
+      - 标签名[序号]/@属性名 获取标签的第n个子节点的属性值
+      - 标签名[序号]/属性名 获取标签的第n个子节点的属性值
+      - 标签名[序号]/属性名='属性值' 获取标签的第n个子节点的属性值
+
+    例：
+      - /html/body/div  定位body下第一个div标签
+      - /html//div  定位所有div标签
+      - //div 定位所有div标签
+      - //div[@class='song'] 定位所有class为song的div标签
+      - //div[@class='song']/a/text() 获取所有class为song的div标签内的a标签的文本内容
+      - //div[@class='song']/a/@href 获取所有class为song的div标签内的a标签的href属性值
+      - //div[@class='song']/a[1] 获取第一个class为song的div标签内的a标签
+      - //div[@class='song']/a[1]/@href 获取第一个class为song的div标签内的a标签的href属性值
+      - //div[@class='song']/a[3]/text() 获取第三个class为song的div标签内的a标签的文本内容 注：索引从1开始
+      - //div[@class='song']//text() 获取所有class为song的div标签内的所有文本内容
+
+      - //div[@class='song']/a[contains(@href, 'www')] 获取所有class为song的div标签内的a标签的href属性值包含www的标签
