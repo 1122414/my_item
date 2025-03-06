@@ -307,6 +307,16 @@ def bfs_shortest_distance(graph, start):
 
 # 动画更新函数
 def update(frame):
+    # 用frame作为x轴基准，避免时间点重置
+    if not hasattr(update, "x_values"):
+        update.x_values = []  # 持久化存储x轴值
+        update.last_frame = 0  # 记录最后处理的帧号
+
+    # 处理跳帧情况（当动画间隔导致跳帧时）
+    current_frames = list(range(update.last_frame + 1, frame + 1))
+    update.x_values.extend(current_frames)
+    update.last_frame = frame
+    
     # 在update函数开头添加样式设置
     # plt.style.use('seaborn')  # 使用更清晰的绘图样式
     colors = ['yellow', 'green', 'red', 'purple', 'orange']
