@@ -58,6 +58,7 @@ def draw_hexagon(ax, q, r, color='white'):
         (x + np.sqrt(3) / 2, y - 0.5)
     ], closed=True, edgecolor='black', facecolor=color)
     ax.add_patch(hexagon)
+    return x,y
 
 # 计算距离（最少格子数）
 def calculate_distance(graph, start, goal):
@@ -274,14 +275,22 @@ def update(frame):
     # 每隔10秒重新选择目标点
     if frame % 10 == 0 and frame != 0:
         try:
+            # global current_position
+            # global last_position
+            # last_position = current_position
             current_position = path[path_index] if path_index < len(path) else start
             current_goal = random.choice([g for g in goals if g in graph.nodes])
             path = a_star(graph, current_position, current_goal)
+            # 处理掉头
+            # if last_position == path[1]:
+            #     path[1][0]+2
+            #     print("掉头情况")
             path_index = 0
             # 如果目标点数大于 goal_num 则清空轨迹
-            if len(goals)>=goal_num:
-                trajectory.clear()  # 仅清除轨迹，不重置概率数据
-        except:
+            # if len(goals)>=goal_num:
+            #     trajectory.clear()  # 仅清除轨迹，不重置概率数据
+        except Exception as e:
+            print(f"重新选择目标点时出现错误：{e}")
             path = [start]
             path_index = 0
 
@@ -289,7 +298,7 @@ def update(frame):
     if path_index < len(path) and path_index >= 0:
         current_node = path[path_index]
         trajectory.append(current_node)
-        
+
         # 计算三种算法的概率
         # my_prob = float(calculate_probability(current_node, goals, graph, {g:[] for g in goals})[0])
         # 只要目标点1的概率
@@ -305,7 +314,20 @@ def update(frame):
         update.storage['prob_records']['step_cost'][current_idx] = step_prob
 
         # 绘制小球和轨迹
-        draw_hexagon(ax1, current_node[0], current_node[1], 'red')
+        global last_position_list
+        global now_position 
+        global last_position_num
+        
+        last_position_list[last_position_num%3] = now_position
+        last_position_num += 1
+        print(f"现在的last_position_list为：{last_position_list}")
+        if last_position_num > 1 and (last_position_list[0]==last_position_list[1] or last_position_list[0]==last_position_list[2] or last_position_list[1]==last_position_list[2]):
+            
+            print("出现掉头情况")
+
+        now_position = draw_hexagon(ax1, current_node[0], current_node[1], 'green')
+
+        # print(f"过去的节点是：{last_position_list},现在的节点是：{now_position}")
         draw_hexagon(ax3, current_node[0], current_node[1], 'red')
         if len(trajectory) > 1:
             x_coords = [n[0]*np.sqrt(3)+n[1]*np.sqrt(3)/2 for n in trajectory]
@@ -367,8 +389,8 @@ if __name__ == "__main__":
     start = (-size, 0, size)
 
     # 将地图变大、目标变多
-    goals = [(size, -size, 0), (0, size, -size),  (0, -size, size), (size, 0, -size), (-size, size, 0), ]  # 五个目标点 更改
-    # goals = [(size, -size, 0), (0, size, -size),   ]  # 五个目标点 更改
+    # goals = [(size, -size, 0), (0, size, -size),  (0, -size, size), (size, 0, -size), (-size, size, 0), ]  # 五个目标点 更改
+    goals = [(size, -size, 0), (0, size, -size),   ]  # 五个目标点 更改
 
     grid = generate_hexagonal_grid(size)
     obstacles = generate_obstacles(grid, 4, 2)
@@ -392,12 +414,23 @@ if __name__ == "__main__":
     distance_record = {goal: [] for goal in goals}  # 用于记录每个目标点到起点的距离
 
     # 当目标点数大于goal_num时，则清空小球轨迹
-    global goal_num
+    global goal_num 
     goal_num = 4
 
     # 动态显示最近frame_num帧
     global frame_num
     frame_num = 30
+
+    # 当前位置，设为全局处理掉头
+    global now_position
+    now_position = (0,0)
+
+    global last_position_list
+    last_position_list = [0,0,0]
+
+    # 控制last_position_list长度
+    global last_position_num
+    last_position_num = 0
 
     path = a_star(graph, start, current_goal)
     path_index = 0
