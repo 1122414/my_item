@@ -37,12 +37,17 @@ def generate_obstacles(grid, num_obstacles, obstacle_size):
         obstacles.append(obstacle)
         # 更新候选节点，排除已生成的障碍物区域
         candidate_nodes = [node for node in candidate_nodes if node not in obstacle]
-
+    # print(f"目前的obstacles是:{obstacles}")
     return obstacles
 
+def weighted_heuristic(u, v):
+    # 原始启发式（如曼哈顿距离）
+    base = abs(u[0] - v[0]) + abs(u[1] - v[1])
+    # 增加随机扰动（权重范围可调）
+    return base * (0.9 + random.uniform(0, 0.2))  # 随机扰动10%~20%
 # A*算法实现
 def a_star(graph, start, goal):
-    return nx.astar_path(graph, start, goal)
+    return nx.astar_path(graph, start, goal, heuristic=weighted_heuristic)
 
 # 绘制六边形
 def draw_hexagon(ax, q, r, color='white'):
@@ -276,11 +281,29 @@ def update(frame):
     if frame % 10 == 0 and frame != 0:
         try:
             # global current_position
-            # global last_position
+            global last_position
             # last_position = current_position
             current_position = path[path_index] if path_index < len(path) else start
             current_goal = random.choice([g for g in goals if g in graph.nodes])
+            # print(f"current_position:{current_position},current_goal:{current_goal}")
+            # print(f"last_path:{path}")
+            last_position = path[path_index-1]
+            # print(f"last_position:{last_position}")
             path = a_star(graph, current_position, current_goal)
+            # print(f"change_path:{path}")
+            try_num=0
+            while last_position == path[1]:
+                # a*回头 重新生成a*路径
+                try_num+=1
+                print(f"last_path:{path}")
+                path = a_star(graph, current_position, current_goal)
+                print(f"change_path:{path}")
+                if try_num>10:
+                    print("a*必回头")
+                    break
+
+                print("出现掉头情况，请及时修改")
+
             # 处理掉头
             # if last_position == path[1]:
             #     path[1][0]+2
@@ -298,6 +321,12 @@ def update(frame):
     if path_index < len(path) and path_index >= 0:
         current_node = path[path_index]
         trajectory.append(current_node)
+        # 检查是否到达目标点
+        if current_node in goals:
+            trajectory.clear()  # 清空当前轨迹
+            ax1.clear()
+            ax3.clear()
+            print(f"已到达目标点 {current_node}，轨迹已清空")
 
         # 计算三种算法的概率
         # my_prob = float(calculate_probability(current_node, goals, graph, {g:[] for g in goals})[0])
@@ -318,12 +347,12 @@ def update(frame):
         global now_position 
         global last_position_num
         
-        last_position_list[last_position_num%3] = now_position
-        last_position_num += 1
-        print(f"现在的last_position_list为：{last_position_list}")
-        if last_position_num > 1 and (last_position_list[0]==last_position_list[1] or last_position_list[0]==last_position_list[2] or last_position_list[1]==last_position_list[2]):
-            
-            print("出现掉头情况")
+        # last_position_list[last_position_num%3] = now_position
+        # last_position_num += 1
+        # print(f"现在的last_position_list为：{last_position_list}")
+        # if last_position_num > 1 and (last_position_list[0]==last_position_list[1] or last_position_list[0]==last_position_list[2] or last_position_list[1]==last_position_list[2]):
+        #     path[path_index+1]=(path[path_index+1][0]+2,path[path_index+1][1],path[path_index+1][2])
+        #     print("出现掉头情况")
 
         now_position = draw_hexagon(ax1, current_node[0], current_node[1], 'green')
 
@@ -425,12 +454,17 @@ if __name__ == "__main__":
     global now_position
     now_position = (0,0)
 
+    global last_position
+    last_position = (0,0,0)
+
     global last_position_list
     last_position_list = [0,0,0]
 
     # 控制last_position_list长度
     global last_position_num
     last_position_num = 0
+
+    global trajectory
 
     path = a_star(graph, start, current_goal)
     path_index = 0
