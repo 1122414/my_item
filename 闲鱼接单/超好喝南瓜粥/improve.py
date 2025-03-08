@@ -346,13 +346,6 @@ def update(frame):
         global last_position_list
         global now_position 
         global last_position_num
-        
-        # last_position_list[last_position_num%3] = now_position
-        # last_position_num += 1
-        # print(f"现在的last_position_list为：{last_position_list}")
-        # if last_position_num > 1 and (last_position_list[0]==last_position_list[1] or last_position_list[0]==last_position_list[2] or last_position_list[1]==last_position_list[2]):
-        #     path[path_index+1]=(path[path_index+1][0]+2,path[path_index+1][1],path[path_index+1][2])
-        #     print("出现掉头情况")
 
         now_position = draw_hexagon(ax1, current_node[0], current_node[1], 'green')
 
