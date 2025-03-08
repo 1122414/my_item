@@ -120,49 +120,54 @@ def calculate_probability(current_node, goals, graph, distance_record):
     # 归一化处理
     total = sum(weights)
     probabilities = [w/total for w in weights]
-    
+    global not_nan_pro
+    if not math.isnan(probabilities[0]):
+        not_nan_pro = probabilities[0]
+
+    if math.isnan(probabilities[0]):
+        print(f"pre_probabilities[0]:{probabilities[0]}")
+        probabilities[0] = not_nan_pro
+        print(f"d_map_pi{d_map_pi},w{weights[0]},total{total}")
+        print(f"probabilities[0]:{probabilities[0]}")
+
     return probabilities
 
 # 改进版基础距离算法
 def base_distance_algorithm(current_node, goals, graph):
-    """改进版基础距离算法"""
-    # 计算到各目标的距离（包含不可达情况处理）
+    """最基础的距离算法"""
+    # 计算到各目标点的距离
     distances = []
     for goal in goals:
         try:
-            distances.append(len(nx.shortest_path(graph, current_node, goal)) - 1)
+            # 使用networkx的最短路径算法
+            distances.append(nx.shortest_path_length(graph, current_node, goal))
         except nx.NetworkXNoPath:
             distances.append(float('inf'))
 
-    # 处理全不可达的极端情况
+    # 处理所有目标都不可达的情况
     if all(d == float('inf') for d in distances):
-        return [1.0/len(goals)]*len(goals)
+        return [1.0/len(goals)] * len(goals)
     
-    # 动态参数设置
-    min_d = min(d for d in distances if d != float('inf'))
-    max_d = max(d for d in distances if d != float('inf'))
-    temperature = 0.3 + 0.5*(max_d - min_d)/max_d  # 自动调节温度参数
-
-    # 智能权重计算
+    # 计算基础权重（距离的倒数）
     weights = []
     for d in distances:
         if d == float('inf'):
             weights.append(0)
-            continue
-        # 改进的权重公式（结合指数衰减和二次衰减）
-        decay_factor = math.exp(-d/(temperature*2)) + 1/(d**2 + 1)
-        # 距离差异强化
-        if d == min_d:
-            decay_factor *= 1.5  # 最小距离额外增强
-        weights.append(decay_factor)
+        else:
+            # 加1防止除零，当d=0时（已到达目标）权重为1
+            weights.append(1/(d**2 + 1))  
 
-    # 自适应平滑
-    valid_weights = [w for w in weights if w > 0]
-    alpha = 0.1 if len(valid_weights) > 1 else 0.5  # 根据有效权重数量动态调整
+    # 处理起点特殊情况：当所有可达目标的距离相等时均分概率
+    valid_distances = [d for d in distances if d != float('inf')]
+    if len(set(valid_distances)) == 1 and valid_distances[0] == nx.shortest_path_length(graph, start, start):
+        return [1.0/len(valid_distances) if d != float('inf') else 0 for d in distances]
+
+    # 归一化处理
+    total = sum(weights)
+    if total == 0:
+        return [1.0/len(goals)] * len(goals)
     
-    # 带平滑的归一化
-    total = sum(weights) + alpha*len(weights)
-    return [(w + alpha)/total if w != 0 else 0 for w in weights]
+    return [w/total for w in weights]
 
 # 改进版步长花费算法（累积奖励+方向一致性）
 def step_cost_algorithm(current_node, goals, graph, prev_node, history_steps=5, alpha=0.8):
@@ -384,7 +389,7 @@ def update(frame):
         y_my = np.array(update.storage['prob_records']['my_algo'])[valid_indices]
         y_base = np.array(update.storage['prob_records']['base_dist'])[valid_indices]
         y_step = np.array(update.storage['prob_records']['step_cost'])[valid_indices]
-        
+        # print(f"y_my:{y_my}")
         ax2.plot(x, y_my, color='blue', label='My Algorithm')
         ax2.plot(x, y_base, color='green', linestyle='--', label='Base Distance')
         ax2.plot(x, y_step, color='red', linestyle=':', label='Step Cost')
@@ -480,6 +485,9 @@ if __name__ == "__main__":
     path = a_star(graph, start, current_goal)
     path_index = 0
     trajectory = []  # 用于存储小球的轨迹
+
+    global not_nan_pro
+    not_nan_pro = 0
 
     recorded_frames = set()  # 用于跟踪已记录帧
     prev_node = None  # 添加历史节点追踪
