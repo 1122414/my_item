@@ -7,7 +7,7 @@ import json
 import random
 import pymysql
 import requests
-
+from tkinter import ttk
 from os import path
 # d = path.dirname(__file__)  # 获取当前路径
 # parent_path = path.dirname(d)  # 获取上一级路径
@@ -259,6 +259,7 @@ def merge_video_audio():
     # os.remove(MP4_file)
     # os.remove(MP3_file)
   except Exception as e:
+    return e
     print(f'{title} 合并失败\n',e)
 
 def close_driver():

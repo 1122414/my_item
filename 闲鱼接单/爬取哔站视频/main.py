@@ -56,11 +56,11 @@ def download_video():
   search_and_download_bilibili_video.action_download(src)
 
   # 合并视频和音频
-  search_and_download_bilibili_video.merge_video_audio()
+  error_session = search_and_download_bilibili_video.merge_video_audio()
   # 关闭浏览器
   # 注意！重复使用不能关闭连接！
   # search_and_download_bilibili_video.close_driver()
-  tkinter.messagebox.showinfo("提示：","下载完成！")
+  tkinter.messagebox.showinfo(f"提示：,{error_session}")
 
 def clear():
 # 清空之前的搜索结果
