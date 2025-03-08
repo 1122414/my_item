@@ -1,0 +1,1 @@
+### python的try内部不能用global
