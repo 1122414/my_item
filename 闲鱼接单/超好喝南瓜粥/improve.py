@@ -126,25 +126,43 @@ def calculate_probability(current_node, goals, graph, distance_record):
 # 改进版基础距离算法
 def base_distance_algorithm(current_node, goals, graph):
     """改进版基础距离算法"""
-    # 计算到各目标的距离
-    distances = [calculate_distance(graph, current_node, goal) for goal in goals]
-    # 添加数值稳定性处理
-    min_distance = min(distances)
-    max_distance = max(distances)
-    # 改进点1：使用指数衰减的权重计算
-    # 添加可调节的温度参数（temperature）控制分布尖锐程度
-    temperature = 0.5  # 值越小分布越尖锐
-    # 改进点2：对距离进行标准化处理
-    normalized_distances = [(d - min_distance + 1e-6) / (max_distance - min_distance + 1e-6) 
-                          for d in distances]  # +1e-6防止除零
-    # 改进点3：使用指数函数 + 非线性变换
-    weights = [math.exp(-(d**1.5)/temperature) for d in normalized_distances]
-    # 改进点4：添加拉普拉斯平滑
-    alpha = 0.1  # 平滑系数
-    total = sum(weights) + alpha * len(weights)
-    # 生成概率分布
-    probabilities = [(w + alpha)/total for w in weights]
-    return probabilities
+    # 计算到各目标的距离（包含不可达情况处理）
+    distances = []
+    for goal in goals:
+        try:
+            distances.append(len(nx.shortest_path(graph, current_node, goal)) - 1)
+        except nx.NetworkXNoPath:
+            distances.append(float('inf'))
+
+    # 处理全不可达的极端情况
+    if all(d == float('inf') for d in distances):
+        return [1.0/len(goals)]*len(goals)
+    
+    # 动态参数设置
+    min_d = min(d for d in distances if d != float('inf'))
+    max_d = max(d for d in distances if d != float('inf'))
+    temperature = 0.3 + 0.5*(max_d - min_d)/max_d  # 自动调节温度参数
+
+    # 智能权重计算
+    weights = []
+    for d in distances:
+        if d == float('inf'):
+            weights.append(0)
+            continue
+        # 改进的权重公式（结合指数衰减和二次衰减）
+        decay_factor = math.exp(-d/(temperature*2)) + 1/(d**2 + 1)
+        # 距离差异强化
+        if d == min_d:
+            decay_factor *= 1.5  # 最小距离额外增强
+        weights.append(decay_factor)
+
+    # 自适应平滑
+    valid_weights = [w for w in weights if w > 0]
+    alpha = 0.1 if len(valid_weights) > 1 else 0.5  # 根据有效权重数量动态调整
+    
+    # 带平滑的归一化
+    total = sum(weights) + alpha*len(weights)
+    return [(w + alpha)/total if w != 0 else 0 for w in weights]
 
 # 改进版步长花费算法（累积奖励+方向一致性）
 def step_cost_algorithm(current_node, goals, graph, prev_node, history_steps=5, alpha=0.8):
