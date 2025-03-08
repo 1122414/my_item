@@ -8,6 +8,49 @@ from math import atan2, degrees, pi, cos
 from collections import deque
 from matplotlib.colors import LinearSegmentedColormap
 
+# 计算夹角
+def cal_included_angle():
+    """
+    计算上一步与目标连线  然后这一步跟上一步连线  这两根线的夹角（单位：度）
+    返回：0.0-180.0之间的角度值，轨迹不足三点时返回0.0
+    """
+    global trajectory
+    
+    if len(trajectory) < 3:
+        return 0.0
+    
+    # 获取最近三个轨迹点
+    a, b = trajectory[-2], trajectory[-1]
+    
+    # 坐标转换（复用已有的hex_to_cartesian逻辑）
+    def hex_to_cartesian(node):
+        q, r, _ = node
+        x = q * np.sqrt(3) + r * np.sqrt(3)/2
+        y = r * 1.5
+        return np.array([x, y])
+    
+    # 转换为笛卡尔坐标
+    a_pt = hex_to_cartesian(a)
+    b_pt = hex_to_cartesian(b)
+    c_pt = hex_to_cartesian(goals[0])
+    
+    # 计算向量 AC 和 AB
+    vector_ba = c_pt - a_pt  # 前一个方向向量
+    vector_bc = b_pt - a_pt  # 当前方向向量
+    
+    # 计算夹角（使用向量点积公式）
+    dot_product = np.dot(vector_ba, vector_bc)
+    norm_ba = np.linalg.norm(vector_ba)
+    norm_bc = np.linalg.norm(vector_bc)
+    
+    if norm_ba == 0 or norm_bc == 0:
+        return 0.0
+    
+    cos_theta = dot_product / (norm_ba * norm_bc)
+    cos_theta = np.clip(cos_theta, -1.0, 1.0)  # 处理浮点误差
+    angle = np.degrees(np.arccos(cos_theta))
+    
+    return round(angle, 2)  # 保留两位小数
 
 # 生成六边形棋盘
 def generate_hexagonal_grid(size):
@@ -39,11 +82,12 @@ def generate_obstacles(grid, num_obstacles, obstacle_size):
     # print(f"目前的obstacles是:{obstacles}")
     return obstacles
 
+# 给a*添加扰动
 def weighted_heuristic(u, v):
     # 原始启发式（如曼哈顿距离）
     base = abs(u[0] - v[0]) + abs(u[1] - v[1])
     # 增加随机扰动（权重范围可调）
-    return base * (0.9 + random.uniform(0, 0.2))  # 随机扰动10%~20%
+    return base * (0.9 + random.uniform(0, 0.3))  # 随机扰动10%~20%
 # A*算法实现
 def a_star(graph, start, goal):
     return nx.astar_path(graph, start, goal, heuristic=weighted_heuristic)
@@ -363,6 +407,10 @@ def update(frame):
         base_prob = float(base_distance_algorithm(current_node, goals, graph)[0])
         step_prob = float(angle_algorithm(current_node, goals, graph, prev_node)[0])
         prev_node = current_node
+        
+        # 打印夹角
+        now_angle = cal_included_angle()
+        print(f"now_angle:{now_angle}")
 
         # 更新当前帧的真实数据
         current_idx = len(update.storage['x_values']) - 1
