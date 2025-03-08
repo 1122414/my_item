@@ -17,7 +17,6 @@ def generate_hexagonal_grid(size):
             grid.append((q, r, -q - r))
     return grid
 
-
 # 定义障碍物
 def generate_obstacles(grid, num_obstacles, obstacle_size):
     obstacles = []
@@ -170,63 +169,69 @@ def base_distance_algorithm(current_node, goals, graph):
     return [w/total for w in weights]
 
 # 改进版步长花费算法（累积奖励+方向一致性）
-def step_cost_algorithm(current_node, goals, graph, prev_node, history_steps=5, alpha=0.8):
-    """改进版步长花费算法（累积奖励+方向一致性）"""
-    if not prev_node:  # 初始状态
+def angle_algorithm(current_node, goals, graph, prev_node):
+    """平滑版方向概率算法"""
+    # 初始化历史记录
+    if not hasattr(angle_algorithm, "history"):
+        angle_algorithm.history = {
+            'move_vectors': deque(maxlen=3),  # 保存最近3个移动方向
+            'prev_weights': None
+        }
+    
+    # 初始状态处理
+    if not prev_node:
         return [1.0/len(goals)] * len(goals)
     
-    # 初始化历史奖励记录（使用字典保存每个目标的奖励历史）
-    if not hasattr(step_cost_algorithm, "reward_history"):
-        step_cost_algorithm.reward_history = {goal: deque(maxlen=history_steps) for goal in goals}
+    # 坐标转换
+    def hex_to_cartesian(node):
+        q, r, _ = node
+        x = q * np.sqrt(3) + r * np.sqrt(3)/2
+        y = r * 1.5
+        return np.array([x, y])
     
-    current_rewards = []
-    directional_factors = []
+    # 获取当前移动向量
+    current_pos = hex_to_cartesian(current_node)
+    prev_pos = hex_to_cartesian(prev_node)
+    move_vector = current_pos - prev_pos
+    move_norm = np.linalg.norm(move_vector)
     
-    # 计算基础奖励和方向因子
-    for i, goal in enumerate(goals):
-        # 基础奖励计算
-        prev_dist = calculate_distance(graph, prev_node, goal)
-        curr_dist = calculate_distance(graph, current_node, goal)
-        step_reward = prev_dist - curr_dist
+    # 平滑处理：使用3帧指数衰减平均
+    angle_algorithm.history['move_vectors'].append(move_vector)
+    weights = [0.5**i for i in range(len(angle_algorithm.history['move_vectors']))]
+    weights = np.array(weights[::-1])/sum(weights)  # 最近帧权重最大
+    smoothed_move = sum(vec*w for vec,w in zip(angle_algorithm.history['move_vectors'], weights))
+    
+    # 计算各目标权重
+    weights = []
+    for goal in goals:
+        goal_pos = hex_to_cartesian(goal)
+        target_vector = goal_pos - current_pos
+        target_norm = np.linalg.norm(target_vector)
         
-        # 方向一致性计算（使用向量夹角）
-        move_vector = np.array(current_node) - np.array(prev_node)
-        target_vector = np.array(goal) - np.array(prev_node)
+        # 到达目标直接返回
+        if target_norm < 1e-6:
+            return [1.0 if g == goal else 0.0 for g in goals]
         
-        # 计算夹角余弦值
-        cos_sim = np.dot(move_vector, target_vector) / (
-            np.linalg.norm(move_vector) * np.linalg.norm(target_vector) + 1e-6)
-        directional_factor = max(cos_sim, 0)  # 仅考虑正向移动
+        # 计算平滑后的方向一致性
+        cos_sim = np.dot(smoothed_move, target_vector) / (np.linalg.norm(smoothed_move)*target_norm + 1e-6)
+        directional_weight = (cos_sim + 1) / 2  # 策略2
         
-        # 累积奖励计算（指数加权平均）
-        history = step_cost_algorithm.reward_history[goal]
-        if len(history) == 0:
-            avg_reward = step_reward
-        else:
-            decay_factors = [alpha ** (history_steps - t) for t in range(len(history))]
-            avg_reward = sum(r * f for r, f in zip(history, decay_factors)) / sum(decay_factors)
+        # 添加距离衰减因子
+        distance = calculate_distance(graph, current_node, goal)
+        distance_weight = 1/(distance + 1)
         
-        # 综合奖励计算
-        total_reward = step_reward + 0.5 * avg_reward + 0.3 * directional_factor * step_reward
-        current_rewards.append(max(total_reward, 0))
-        directional_factors.append(directional_factor)
-        
-        # 更新历史记录
-        history.append(step_reward)
+        # 综合权重（可调比例）
+        total_weight = 0.7*directional_weight + 0.3*distance_weight
+        weights.append(total_weight)
     
-    # 动态温度参数（根据移动方向一致性调整）
-    avg_direction = np.mean(directional_factors)
-    temperature = 0.5 + 0.5 * (1 - avg_direction)  # 方向越分散，温度越高
+    # 添加历史惯性（防止突变）
+    if angle_algorithm.history['prev_weights'] is not None:
+        weights = [0.3*old + 0.7*new for old,new in zip(angle_algorithm.history['prev_weights'], weights)]
+    angle_algorithm.history['prev_weights'] = weights
     
-    # 使用softmax归一化
-    max_reward = max(current_rewards)
-    exp_rewards = [math.exp((r - max_reward)/temperature) for r in current_rewards]
-    total = sum(exp_rewards)
-    
-    if total == 0:
-        return [1.0/len(goals)] * len(goals)
-    
-    return [er/total for er in exp_rewards]
+    # 归一化处理
+    total = max(sum(weights), 1e-10)
+    return [w/total for w in weights]
 
 # 广度优先搜索计算最短距离
 def bfs_shortest_distance(graph, start):
@@ -251,7 +256,7 @@ def update(frame):
             'prob_records': {
                 'my_algo': [],
                 'base_dist': [],
-                'step_cost': []
+                'angle': []
             },
             'last_processed_frame': -1
         }
@@ -260,7 +265,7 @@ def update(frame):
     current_frames = list(range(update.storage['last_processed_frame']+1, frame+1))
     for f in current_frames:
         update.storage['x_values'].append(f)
-        for algo in ['my_algo', 'base_dist', 'step_cost']:
+        for algo in ['my_algo', 'base_dist', 'angle']:
             if len(update.storage['prob_records'][algo]) == 0:
                 update.storage['prob_records'][algo].append(None)
             else:
@@ -356,14 +361,14 @@ def update(frame):
         # 只要目标点1的概率
         my_prob = float(calculate_probability(current_node, goals, graph, distance_record)[0])
         base_prob = float(base_distance_algorithm(current_node, goals, graph)[0])
-        step_prob = float(step_cost_algorithm(current_node, goals, graph, prev_node)[0])
+        step_prob = float(angle_algorithm(current_node, goals, graph, prev_node)[0])
         prev_node = current_node
 
         # 更新当前帧的真实数据
         current_idx = len(update.storage['x_values']) - 1
         update.storage['prob_records']['my_algo'][current_idx] = my_prob
         update.storage['prob_records']['base_dist'][current_idx] = base_prob
-        update.storage['prob_records']['step_cost'][current_idx] = step_prob
+        update.storage['prob_records']['angle'][current_idx] = step_prob
 
         # 绘制小球和轨迹
         global last_position_list
@@ -388,7 +393,7 @@ def update(frame):
         x = np.array(update.storage['x_values'])[valid_indices]
         y_my = np.array(update.storage['prob_records']['my_algo'])[valid_indices]
         y_base = np.array(update.storage['prob_records']['base_dist'])[valid_indices]
-        y_step = np.array(update.storage['prob_records']['step_cost'])[valid_indices]
+        y_step = np.array(update.storage['prob_records']['angle'])[valid_indices]
         # print(f"y_my:{y_my}")
         ax2.plot(x, y_my, color='blue', label='My Algorithm')
         ax2.plot(x, y_base, color='green', linestyle='--', label='Base Distance')
@@ -396,7 +401,7 @@ def update(frame):
         
         # 动态显示最近30帧
         if len(x) > frame_num:
-            ax2.set_xlim(x[-30], x[-1]+1)
+            ax2.set_xlim(x[-frame_num], x[-1]+1)
         else:
             ax2.set_xlim(x[0]-1, x[-1]+1)
     else:
