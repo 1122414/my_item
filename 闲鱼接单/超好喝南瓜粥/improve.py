@@ -19,8 +19,25 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 data_file_path = os.path.join(current_path, 'data.txt')
 graph_file_path = os.path.join(current_path, 'graph.png')
 
+# 绘制六边形
+def draw_hexagon(ax, q, r, color='white'):
+    # x,y坐标
+    x = q * np.sqrt(3) + r * np.sqrt(3) / 2
+    y = r * 1.5
+    hexagon = plt.Polygon([
+        (x + np.sqrt(3) / 2, y + 0.5),
+        (x, y + 1),
+        (x - np.sqrt(3) / 2, y + 0.5),
+        (x - np.sqrt(3) / 2, y - 0.5),
+        (x, y - 1),
+        (x + np.sqrt(3) / 2, y - 0.5)
+    ], closed=True, edgecolor='black', facecolor=color)
+    ax.add_patch(hexagon)
+    return x,y
+
 # 异步保存避免阻塞动画
-def save_work(x_values, my_probs, base_probs, angle_probs, save_counter):
+def save_work(x_values, my_probs, base_probs, angle_probs, save_counter,
+              grid, obstacles, start, goals, trajectory):
     # 深拷贝数据避免线程冲突
     import copy
     # 设置非GUI后端必须在导入pyplot之前
@@ -33,6 +50,48 @@ def save_work(x_values, my_probs, base_probs, angle_probs, save_counter):
     mpl.rcParams.update(mpl.rcParamsDefault)  # 重置配置
     mpl.use('Agg')  # 必须在导入pyplot前设置
     import matplotlib.pyplot as plt
+    # 生成文件名
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if not os.path.exists(timestamp):
+        os.makedirs(timestamp)
+        csv_path = os.path.join(timestamp, f'probability_data_{save_counter}_{timestamp}.csv')
+        probability_img_path = os.path.join(timestamp,f'final_plot_{save_counter}_{timestamp}.png')
+        hex_img_path = os.path.join(timestamp, f'hex_map_{save_counter}_{timestamp}.png')
+
+    try:
+        # 新增：创建保存ax1图像的figure
+        fig_hex = plt.figure(figsize=(10, 10), dpi=100)
+        ax_hex = fig_hex.add_subplot(111)
+        ax_hex.set_aspect('equal')
+        ax_hex.set_xticks([])
+        ax_hex.set_yticks([])
+
+        # 绘制基本网格
+        for node in grid:
+            color = 'white'
+            if node in [item for sublist in obstacles for item in sublist]:
+                color = 'gray'
+            if node == start:
+                color = 'blue'
+            if node in goals:
+                idx = goals.index(node)
+                color = ['yellow', 'green', 'red', 'purple', 'orange'][idx]
+            draw_hexagon(ax_hex, node[0], node[1], color)
+
+        # 绘制轨迹
+        if len(trajectory) > 1:
+            x_coords = [n[0]*np.sqrt(3)+n[1]*np.sqrt(3)/2 for n in trajectory]
+            y_coords = [n[1]*1.5 for n in trajectory]
+            ax_hex.plot(x_coords, y_coords, color='orange', linewidth=3)
+
+        # 保存六边形网格图
+        
+        fig_hex.savefig(hex_img_path, bbox_inches='tight')
+        plt.close(fig_hex)
+
+    except Exception as e:
+        print(f"保存六边形地图失败: {str(e)}")
+
     try:
         # 创建 DataFrame
         df = pd.DataFrame({
@@ -42,44 +101,36 @@ def save_work(x_values, my_probs, base_probs, angle_probs, save_counter):
             'Angle_Algorithm': local_angle
         }).dropna()
         
-        # 生成文件名
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        if not os.path.exists(timestamp):
-            os.makedirs(timestamp)
-            csv_path = os.path.join(timestamp, f'probability_data_{save_counter}_{timestamp}.csv')
-            img_path = os.path.join(timestamp,f'final_plot_{save_counter}_{timestamp}.png')
-                    
-            # 保存CSV
-            df.to_csv(csv_path, index=False)
-                    
-            # 替换原有绘图代码
-            from matplotlib.backends.backend_agg import FigureCanvasAgg
-            fig = plt.figure(figsize=(12, 6), dpi=150)
-            # canvas = FigureCanvasAgg(fig)
-            ax = fig.add_subplot(111)
-            ax.plot(df['Frame'], df['My_Algorithm'], 'b-', label='My Algorithm')
-            ax.plot(df['Frame'], df['Base_Distance'], 'g--', label='Base Distance')
-            ax.plot(df['Frame'], df['Angle_Algorithm'], 'r:', label='Angle Algorithm')
-            ax.set_xlabel('Frame Number')
-            ax.set_ylabel('Probability')
-            ax.set_title(f'Goal 1 Probability Comparison (Cycle {save_counter})')
-            ax.legend()
-            ax.grid(True)
-                    
-            # 保存
-            fig.savefig(img_path, bbox_inches='tight')
-            plt.close(fig)  # 关闭子进程的figure，不影响主线程 
+        # 保存CSV
+        df.to_csv(csv_path, index=False)
+
+        # 替换原有绘图代码
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        fig = plt.figure(figsize=(12, 6), dpi=150)
+        # canvas = FigureCanvasAgg(fig)
+        ax = fig.add_subplot(111)
+        ax.plot(df['Frame'], df['My_Algorithm'], 'b-', label='My Algorithm')
+        ax.plot(df['Frame'], df['Base_Distance'], 'g--', label='Base Distance')
+        ax.plot(df['Frame'], df['Angle_Algorithm'], 'r:', label='Angle Algorithm')
+        ax.set_xlabel('Frame Number')
+        ax.set_ylabel('Probability')
+        ax.set_title(f'Goal 1 Probability Comparison (Cycle {save_counter})')
+        ax.legend()
+        ax.grid(True)
+
+        # 保存
+        fig.savefig(probability_img_path, bbox_inches='tight')
+        plt.close(fig)  # 关闭子进程的figure，不影响主线程 
     except Exception as e:
         print(f"保存失败: {str(e)}")
-            # 保存图像后立即关闭子进程的figure
-    fig.savefig(img_path, bbox_inches='tight')
-    plt.close(fig)  # 关闭子进程的figure，不影响主线程 
 
 # 异步保存函数
-def async_save(x_values, my_probs, base_probs, angle_probs,save_counter):
+def async_save(x_values, my_probs, base_probs, angle_probs,save_counter, 
+               grid_data, obstacles_data, start_data, goals_data, trajectory_data):
     p = multiprocessing.Process(
         target=save_work,
-        args=(x_values, my_probs, base_probs, angle_probs, save_counter)
+        args=(x_values, my_probs, base_probs, angle_probs, save_counter, 
+               grid_data, obstacles_data, start_data, goals_data, trajectory_data)
     )
     p.start()
 
@@ -166,22 +217,6 @@ def weighted_heuristic(u, v):
 # A*算法实现
 def a_star(graph, start, goal):
     return nx.astar_path(graph, start, goal, heuristic=weighted_heuristic)
-
-# 绘制六边形
-def draw_hexagon(ax, q, r, color='white'):
-    # x,y坐标
-    x = q * np.sqrt(3) + r * np.sqrt(3) / 2
-    y = r * 1.5
-    hexagon = plt.Polygon([
-        (x + np.sqrt(3) / 2, y + 0.5),
-        (x, y + 1),
-        (x - np.sqrt(3) / 2, y + 0.5),
-        (x - np.sqrt(3) / 2, y - 0.5),
-        (x, y - 1),
-        (x + np.sqrt(3) / 2, y - 0.5)
-    ], closed=True, edgecolor='black', facecolor=color)
-    ax.add_patch(hexagon)
-    return x,y
 
 # 计算距离（最少格子数）
 def calculate_distance(graph, start, goal):
@@ -379,18 +414,26 @@ def update(frame):
             },
             'last_processed_frame': -1
         }
-
+    
     # 处理跳帧（填充缺失帧数据）
-    current_frames = list(range(update.storage['last_processed_frame']+1, frame+1))
-    for f in current_frames:
-        update.storage['x_values'].append(f)
-        for algo in ['my_algo', 'base_dist', 'angle']:
-            if len(update.storage['prob_records'][algo]) == 0:
-                update.storage['prob_records'][algo].append(None)
-            else:
-                update.storage['prob_records'][algo].append(
-                    update.storage['prob_records'][algo][-1]
-                )
+    # current_frames = list(range(update.storage['last_processed_frame']+1, frame+1))
+    # for f in current_frames:
+    #     update.storage['x_values'].append(f)
+        # for algo in ['my_algo', 'base_dist', 'angle']:
+        #     # 获取当前算法记录列表
+        #     records = update.storage['prob_records'][algo]
+        #     # 始终追加新元素（None或最后值）
+        #     if len(records) != 0:
+        #         records.append(records[-1])
+
+
+    # while len(update.storage['prob_records'][algo]) < current_len:
+    #     update.storage['prob_records'][algo].append(None)
+    # while len(update.storage['prob_records'][algo]) > current_len:
+    #     update.storage['prob_records'][algo].pop()
+
+            
+            
     
     # 更新最后处理的帧号
     update.storage['last_processed_frame'] = frame
@@ -463,15 +506,19 @@ def update(frame):
             print(f"重新选择目标点时出现错误：{e}")
             path = [start]
             path_index = 0
+            ax1.clear()
+            ax3.clear()
 
     # 更新小球位置
     if path_index < len(path) and path_index >= 0:
+        global update_num
+        update_num += 1
+
         current_node = path[path_index]
         trajectory.append(current_node)
         # 检查是否到达目标点
         if current_node in goals:
             time.sleep(0.5)  # 添加500ms延迟
-            trajectory.clear()  # 清空当前轨迹
             ax1.clear()
             ax3.clear()
             print(f"已到达目标点 {current_node}，轨迹已清空")
@@ -479,22 +526,29 @@ def update(frame):
             # === 新增保存逻辑 ===
             global save_counter
             save_counter += 1
-
             # 创建临时副本防止数据修改
             x_values = update.storage['x_values'].copy()
             my_probs = update.storage['prob_records']['my_algo'].copy()
             base_probs = update.storage['prob_records']['base_dist'].copy()
             angle_probs = update.storage['prob_records']['angle'].copy()
-            async_save(x_values, my_probs, base_probs, angle_probs, save_counter)
+            async_save(x_values, my_probs, base_probs, angle_probs, save_counter,
+           grid, obstacles, start, goals, trajectory)
+            trajectory.clear()  # 清空当前轨迹
             # update.storage['x_values'].clear()
             # update.storage['prob_records']['my_algo'].clear()
             # update.storage['prob_records']['base_dist'].clear()
             # update.storage['prob_records']['angle'].clear()
-            # === 新增清空逻辑 ===
-            update.storage['x_values'].clear()
-            for algo in ['my_algo', 'base_dist', 'angle']:
-                update.storage['prob_records'][algo].clear()
-            update.storage['last_processed_frame'] = -1  # 重置帧计数器
+            # === 修正后的清空逻辑 ===
+            update.storage = {  # 完全重建数据结构
+                'x_values': [],
+                'prob_records': {
+                    'my_algo': [],
+                    'base_dist': [],
+                    'angle': []
+                },
+                'last_processed_frame': -1
+            }
+            update_num = 0
 
         # 计算三种算法的概率
         # my_prob = float(calculate_probability(current_node, goals, graph, {g:[] for g in goals})[0])
@@ -509,10 +563,11 @@ def update(frame):
         print(f"now_angle:{now_angle}")
 
         # 更新当前帧的真实数据
-        current_idx = len(update.storage['x_values']) - 1
-        update.storage['prob_records']['my_algo'][current_idx] = my_prob
-        update.storage['prob_records']['base_dist'][current_idx] = base_prob
-        update.storage['prob_records']['angle'][current_idx] = step_prob
+        # 改为追加方式：
+        update.storage['x_values'].append(update_num)
+        update.storage['prob_records']['my_algo'].append(my_prob)
+        update.storage['prob_records']['base_dist'].append(base_prob)
+        update.storage['prob_records']['angle'].append(step_prob)
 
         # 绘制小球和轨迹
         global last_position_list
@@ -532,7 +587,7 @@ def update(frame):
         path_index += 1
 
     # 绘制概率曲线
-    valid_indices = [i for i, v in enumerate(update.storage['prob_records']['my_algo']) if v is not None]
+    valid_indices = [i for i, v in enumerate(update.storage['x_values']) if v is not None]
     if valid_indices:
         x = np.array(update.storage['x_values'])[valid_indices]
         y_my = np.array(update.storage['prob_records']['my_algo'])[valid_indices]
@@ -645,6 +700,9 @@ if __name__ == "__main__":
 
     global not_nan_pro
     not_nan_pro = 0
+
+    global update_num
+    update_num = -1
 
     recorded_frames = set()  # 用于跟踪已记录帧
     prev_node = None  # 添加历史节点追踪
