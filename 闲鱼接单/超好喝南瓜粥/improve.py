@@ -1,7 +1,9 @@
 import os
 import math
+import time
 import numpy as np
 import pandas as pd
+import multiprocessing
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import networkx as nx
@@ -16,6 +18,70 @@ from datetime import datetime
 current_path = os.path.dirname(os.path.abspath(__file__))
 data_file_path = os.path.join(current_path, 'data.txt')
 graph_file_path = os.path.join(current_path, 'graph.png')
+
+# 异步保存避免阻塞动画
+def save_work(x_values, my_probs, base_probs, angle_probs, save_counter):
+    # 深拷贝数据避免线程冲突
+    import copy
+    # 设置非GUI后端必须在导入pyplot之前
+    local_x = copy.deepcopy(x_values)
+    local_my = copy.deepcopy(my_probs)
+    local_base = copy.deepcopy(base_probs)
+    local_angle = copy.deepcopy(angle_probs)
+    # 使用独立matplotlib配置
+    import matplotlib as mpl
+    mpl.rcParams.update(mpl.rcParamsDefault)  # 重置配置
+    mpl.use('Agg')  # 必须在导入pyplot前设置
+    import matplotlib.pyplot as plt
+    try:
+        # 创建 DataFrame
+        df = pd.DataFrame({
+            'Frame': local_x,
+            'My_Algorithm': local_my,
+            'Base_Distance': local_base,
+            'Angle_Algorithm': local_angle
+        }).dropna()
+        
+        # 生成文件名
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        if not os.path.exists(timestamp):
+            os.makedirs(timestamp)
+            csv_path = os.path.join(timestamp, f'probability_data_{save_counter}_{timestamp}.csv')
+            img_path = os.path.join(timestamp,f'final_plot_{save_counter}_{timestamp}.png')
+                    
+            # 保存CSV
+            df.to_csv(csv_path, index=False)
+                    
+            # 替换原有绘图代码
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            fig = plt.figure(figsize=(12, 6), dpi=150)
+            # canvas = FigureCanvasAgg(fig)
+            ax = fig.add_subplot(111)
+            ax.plot(df['Frame'], df['My_Algorithm'], 'b-', label='My Algorithm')
+            ax.plot(df['Frame'], df['Base_Distance'], 'g--', label='Base Distance')
+            ax.plot(df['Frame'], df['Angle_Algorithm'], 'r:', label='Angle Algorithm')
+            ax.set_xlabel('Frame Number')
+            ax.set_ylabel('Probability')
+            ax.set_title(f'Goal 1 Probability Comparison (Cycle {save_counter})')
+            ax.legend()
+            ax.grid(True)
+                    
+            # 保存
+            fig.savefig(img_path, bbox_inches='tight')
+            plt.close(fig)  # 关闭子进程的figure，不影响主线程 
+    except Exception as e:
+        print(f"保存失败: {str(e)}")
+            # 保存图像后立即关闭子进程的figure
+    fig.savefig(img_path, bbox_inches='tight')
+    plt.close(fig)  # 关闭子进程的figure，不影响主线程 
+
+# 异步保存函数
+def async_save(x_values, my_probs, base_probs, angle_probs,save_counter):
+    p = multiprocessing.Process(
+        target=save_work,
+        args=(x_values, my_probs, base_probs, angle_probs, save_counter)
+    )
+    p.start()
 
 # 计算夹角
 def cal_included_angle():
@@ -404,10 +470,31 @@ def update(frame):
         trajectory.append(current_node)
         # 检查是否到达目标点
         if current_node in goals:
+            time.sleep(0.5)  # 添加500ms延迟
             trajectory.clear()  # 清空当前轨迹
             ax1.clear()
             ax3.clear()
             print(f"已到达目标点 {current_node}，轨迹已清空")
+
+            # === 新增保存逻辑 ===
+            global save_counter
+            save_counter += 1
+
+            # 创建临时副本防止数据修改
+            x_values = update.storage['x_values'].copy()
+            my_probs = update.storage['prob_records']['my_algo'].copy()
+            base_probs = update.storage['prob_records']['base_dist'].copy()
+            angle_probs = update.storage['prob_records']['angle'].copy()
+            async_save(x_values, my_probs, base_probs, angle_probs, save_counter)
+            # update.storage['x_values'].clear()
+            # update.storage['prob_records']['my_algo'].clear()
+            # update.storage['prob_records']['base_dist'].clear()
+            # update.storage['prob_records']['angle'].clear()
+            # === 新增清空逻辑 ===
+            update.storage['x_values'].clear()
+            for algo in ['my_algo', 'base_dist', 'angle']:
+                update.storage['prob_records'][algo].clear()
+            update.storage['last_processed_frame'] = -1  # 重置帧计数器
 
         # 计算三种算法的概率
         # my_prob = float(calculate_probability(current_node, goals, graph, {g:[] for g in goals})[0])
@@ -488,12 +575,17 @@ def update(frame):
 
 
 if __name__ == "__main__":
+    # 在 if __name__ == "__main__": 开头添加
+    import matplotlib as mpl
+    # 设置主线程使用TkAgg后端（更稳定）
+    mpl.use('TkAgg')
+
     global save_counter
     save_counter = 0  # 保存次数计数器
-    
+
     # 将地图变大、目标变多 更改
     # 初始化棋盘
-    size = 18
+    size = 10
 
     # 定义起点和目标点
     start = (-size, 0, size)
@@ -581,39 +673,3 @@ if __name__ == "__main__":
     save_count=1000  # 适当调大缓存
     )
     plt.show()
-
-    # 获取存储的数据
-    x_values = update.storage['x_values']
-    my_probs = update.storage['prob_records']['my_algo']
-    base_probs = update.storage['prob_records']['base_dist']
-    angle_probs = update.storage['prob_records']['angle']
-
-    # 创建DataFrame并清理数据
-    df = pd.DataFrame({
-        'Frame': x_values,
-        'My_Algorithm': my_probs,
-        'Base_Distance': base_probs,
-        'Angle_Algorithm': angle_probs
-    }).dropna()
-
-    # 保存CSV数据
-    df.to_csv('probability_data.csv', index=False)
-    print("概率数据已保存到 probability_data.csv")
-
-    # 绘制最终折线图
-    plt.figure(figsize=(12, 6))
-    plt.plot(df['Frame'], df['My_Algorithm'], 'b-', label='My Algorithm')
-    plt.plot(df['Frame'], df['Base_Distance'], 'g--', label='Base Distance')
-    plt.plot(df['Frame'], df['Angle_Algorithm'], 'r:', label='Angle Algorithm')
-    
-    plt.xlabel('Frame Number')
-    plt.ylabel('Probability')
-    plt.title('Goal 1 Probability Comparison Over Time')
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-
-    # 保存图片
-    plt.savefig('final_probability_plot.png', dpi=300)
-    print("折线图已保存为 final_probability_plot.png")
-    plt.close()
