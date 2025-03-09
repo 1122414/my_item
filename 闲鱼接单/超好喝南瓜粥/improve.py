@@ -1,12 +1,21 @@
+import os
 import math
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import networkx as nx
 import random
+import threading
 from math import atan2, degrees, pi, cos
 from collections import deque
 from matplotlib.colors import LinearSegmentedColormap
+from datetime import datetime
+
+
+current_path = os.path.dirname(os.path.abspath(__file__))
+data_file_path = os.path.join(current_path, 'data.txt')
+graph_file_path = os.path.join(current_path, 'graph.png')
 
 # 计算夹角
 def cal_included_angle():
@@ -212,7 +221,7 @@ def base_distance_algorithm(current_node, goals, graph):
     
     return [w/total for w in weights]
 
-# 改进版步长花费算法（累积奖励+方向一致性）
+# 角度算法
 def angle_algorithm(current_node, goals, graph, prev_node):
     """平滑版方向概率算法"""
     # 初始化历史记录
@@ -479,6 +488,9 @@ def update(frame):
 
 
 if __name__ == "__main__":
+    global save_counter
+    save_counter = 0  # 保存次数计数器
+    
     # 将地图变大、目标变多 更改
     # 初始化棋盘
     size = 18
@@ -569,3 +581,39 @@ if __name__ == "__main__":
     save_count=1000  # 适当调大缓存
     )
     plt.show()
+
+    # 获取存储的数据
+    x_values = update.storage['x_values']
+    my_probs = update.storage['prob_records']['my_algo']
+    base_probs = update.storage['prob_records']['base_dist']
+    angle_probs = update.storage['prob_records']['angle']
+
+    # 创建DataFrame并清理数据
+    df = pd.DataFrame({
+        'Frame': x_values,
+        'My_Algorithm': my_probs,
+        'Base_Distance': base_probs,
+        'Angle_Algorithm': angle_probs
+    }).dropna()
+
+    # 保存CSV数据
+    df.to_csv('probability_data.csv', index=False)
+    print("概率数据已保存到 probability_data.csv")
+
+    # 绘制最终折线图
+    plt.figure(figsize=(12, 6))
+    plt.plot(df['Frame'], df['My_Algorithm'], 'b-', label='My Algorithm')
+    plt.plot(df['Frame'], df['Base_Distance'], 'g--', label='Base Distance')
+    plt.plot(df['Frame'], df['Angle_Algorithm'], 'r:', label='Angle Algorithm')
+    
+    plt.xlabel('Frame Number')
+    plt.ylabel('Probability')
+    plt.title('Goal 1 Probability Comparison Over Time')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+
+    # 保存图片
+    plt.savefig('final_probability_plot.png', dpi=300)
+    print("折线图已保存为 final_probability_plot.png")
+    plt.close()
