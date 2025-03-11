@@ -14,7 +14,6 @@ from collections import deque
 from matplotlib.colors import LinearSegmentedColormap
 from datetime import datetime
 
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 data_file_path = os.path.join(current_path, 'data.txt')
 graph_file_path = os.path.join(current_path, 'graph.png')
@@ -134,8 +133,8 @@ def async_save(x_values, my_probs, base_probs, angle_probs,save_counter,
     )
     p.start()
 
-# 计算夹角
-def cal_included_angle():
+# 计算前一步与现在的点 同 前一步与目标点 的夹角
+def cal_included_angle(now_goal):
     """
     计算上一步与目标连线  然后这一步跟上一步连线  这两根线的夹角（单位：度）
     返回：0.0-180.0之间的角度值，轨迹不足三点时返回0.0
@@ -145,7 +144,7 @@ def cal_included_angle():
     if len(trajectory) < 3:
         return 0.0
     
-    # 获取最近三个轨迹点
+    # 获取最近两个轨迹点
     a, b = trajectory[-2], trajectory[-1]
     
     # 坐标转换（复用已有的hex_to_cartesian逻辑）
@@ -158,7 +157,7 @@ def cal_included_angle():
     # 转换为笛卡尔坐标
     a_pt = hex_to_cartesian(a)
     b_pt = hex_to_cartesian(b)
-    c_pt = hex_to_cartesian(goals[0])
+    c_pt = hex_to_cartesian(now_goal)
     
     # 计算向量 AC 和 AB
     vector_ba = c_pt - a_pt  # 前一个方向向量
@@ -214,6 +213,7 @@ def weighted_heuristic(u, v):
     base = abs(u[0] - v[0]) + abs(u[1] - v[1])
     # 增加随机扰动（权重范围可调）
     return base * (0.9 + random.uniform(0, 0.3))  # 随机扰动10%~20%
+
 # A*算法实现
 def a_star(graph, start, goal):
     return nx.astar_path(graph, start, goal, heuristic=weighted_heuristic)
@@ -230,16 +230,25 @@ def calculate_distance(graph, start, goal):
 def calculate_probability(current_node, goals, graph, distance_record):
     # 步长，即过去n步的记录
     n = 3
-    # 新增波动增强参数
-    volatility_factor = 2.5  # 波动放大系数
-    random_boost = 0.4       # 随机扰动强度
+    weights = []
+    distances = []
+    for goal in goals:
+        try:
+            # 使用networkx的最短路径算法
+            distances.append(nx.shortest_path_length(graph, current_node, goal))
+        except nx.NetworkXNoPath:
+            distances.append(float('inf'))
+    for d in distances:
+        if d == float('inf'):
+            weights.append(0)
+        else:
+            # 加1防止除零，当d=0时（已到达目标）权重为1
+            weights.append(1/(d**2 + 1))
 
-    # 更改部分
-    # 计算到各目标的距离
-    distances = [calculate_distance(graph, current_node, goal) for goal in goals]
     # 记录距离数据
     for i, goal in enumerate(goals):
         distance_record[goal].append(distances[i])
+
     # 检查是否到达任意目标点
     for i, d in enumerate(distances):
         if d == 0:
@@ -247,64 +256,68 @@ def calculate_probability(current_node, goals, graph, distance_record):
             prob = [0.0] * len(goals)
             prob[i] = 1.0
             return tuple(prob)
+        
+
     # 初始化所有theta为默认值
+    # thetas = [np.pi/2] * len(goals)
     thetas = [np.pi/2] * len(goals)
     # 初始化
     d_map_pi = 1.0  
     # 当有足够历史数据时计算趋势
-    if len(distance_record[goals[0]]) >= n:
-        x = np.array(range(1, n+1))
+    x = []
+    c = []
+
+    # x = np.array(range(1, n+1))
+    if (len(distance_record[goals[0]]) - 1) >= n:
         for i in range(len(goals)):
             # 获取最近5个距离值
             y = distance_record[goals[i]][-n:]
             # 步长映射
             d_change = y[0]-y[n-1]
             # d_map_pi = math.pi*(d_change+n)/n
-            d_map_pi = math.pi * (d_change * 2)  # 去除分母n，放大变化量
-
-            coef = np.polyfit(x, y, 1)[0] * 1.8  # 放大趋势系数
-            # 添加方向反转检测机制
-            if len(y)>=3 and (y[-1]-y[-2])*(y[-2]-y[-3]) < 0:
-                coef *= -volatility_factor  # 当方向反转时增强波动
-
-            # # 计算线性回归系数
-            # coef = np.polyfit(x, y, 1)[0]
-            # 计算角度（趋势方向）
-            thetas[i] = np.arctan(coef)
+            d_map_pi = math.pi * (d_change * 2) / n # 去除分母n，放大变化量
+            # 计算总距离变化量
+            l_change = y[0] - y[-1]  # 初始距离 - 当前距离
+            # coef = np.polyfit(x, y, 1)[0] * 1.8  # 放大趋势系数
+            # # 添加方向反转检测机制
+            # if len(y)>=3 and (y[-1]-y[-2])*(y[-2]-y[-3]) < 0:
+            #     coef *= -volatility_factor  # 当方向反转时增强波动
+            # thetas[i] = np.arctan(coef)
+            thetas[i] = (np.pi * (n - l_change)) / (2*n)  # 角度映射
+            x.append(0.6*np.cos(thetas[i])**2 + 1.4*np.cos(thetas[i]) + 1)
+            c.append(x[i] * weights[i])
+    else:
+        for i in range(len(goals)):
+            c.append(weights[i])
     # 计算各目标权重
-    weights = []
+    # weights = []
     # for i in range(len(goals)):
-    #     x = distances[i]
+    #     # x = distances[i]
     #     theta = thetas[i]
-    #     # 权重计算公式（可根据需要调整系数）
-    #     weight = d_map_pi * (1 / (x**2 + 1)) * (0.6 * np.cos(theta)**2 + 1.4 * np.cos(theta) + 1)
-    #     weights.append(weight)
-    for i in range(len(goals)):
-        x = distances[i]
-        theta = thetas[i]
-        # 新公式包含：立方距离衰减 + 指数趋势项 + 随机扰动
-        weight = (
-            (1 / (x**3 + 1e-3)) *  # 更陡峭的距离衰减
-            (2.0 * np.exp(np.cos(theta)) - 1.0) *  # 指数趋势增强
-            (1 + random.uniform(-random_boost, random_boost))  # 随机扰动
-        )
-        weights.append(weight**1.5)  # 非线性放大
+    #     # 新公式包含：立方距离衰减 + 指数趋势项 + 随机扰动
+    #     # weight = (
+    #     #     # (1 / (x**3 + 1e-3)) *  # 更陡峭的距离衰减
+    #     #     (2.0 * np.exp(np.cos(theta)) - 1.0)   # 指数趋势增强
+    #     #     # (1 + random.uniform(-random_boost, random_boost))  # 随机扰动
+    #     # )
+    #     print(f"np.cos(theta)是：{np.cos(theta)}")
+    #     weight = 2.0 * np.exp(np.cos(theta)) - 1.0
+    #     weights.append(weight)  # 非线性放大
 
-    # 新增：在归一化前增强最大权重差异
-    # max_w = max(weights)
-    # weights = [w**2 if w == max_w else w for w in weights]
+    # print(f"weights是:{weights}")
     # 归一化处理
-    total = sum(weights)
-    probabilities = [w/total for w in weights]
-    global not_nan_pro
-    if not math.isnan(probabilities[0]):
-        not_nan_pro = probabilities[0]
+    total = sum(c)
+    # print(f"total的值是:{total}")
+    probabilities = [i/total for i in c]
+    # global not_nan_pro
+    # if not math.isnan(probabilities[0]):
+    #     not_nan_pro = probabilities[0]
 
-    if math.isnan(probabilities[0]):
-        print(f"pre_probabilities[0]:{probabilities[0]}")
-        probabilities[0] = not_nan_pro
-        print(f"d_map_pi{d_map_pi},w{weights[0]},total{total}")
-        print(f"probabilities[0]:{probabilities[0]}")
+    # if math.isnan(probabilities[0]):
+    #     print(f"pre_probabilities[0]:{probabilities[0]}")
+    #     probabilities[0] = not_nan_pro
+    #     print(f"d_map_pi{d_map_pi},w{weights[0]},total{total}")
+    #     print(f"probabilities[0]:{probabilities[0]}")
 
     return probabilities
 
@@ -331,12 +344,12 @@ def base_distance_algorithm(current_node, goals, graph):
             weights.append(0)
         else:
             # 加1防止除零，当d=0时（已到达目标）权重为1
-            weights.append(1/(d**2 + 1))  
+            weights.append(1/(d**2 + 1))
 
     # 处理起点特殊情况：当所有可达目标的距离相等时均分概率
-    valid_distances = [d for d in distances if d != float('inf')]
-    if len(set(valid_distances)) == 1 and valid_distances[0] == nx.shortest_path_length(graph, start, start):
-        return [1.0/len(valid_distances) if d != float('inf') else 0 for d in distances]
+    # valid_distances = [d for d in distances if d != float('inf')]
+    # if len(set(valid_distances)) == 1 and valid_distances[0] == nx.shortest_path_length(graph, start, start):
+    #     return [1.0/len(valid_distances) if d != float('inf') else 0 for d in distances]
 
     # 归一化处理
     total = sum(weights)
@@ -348,67 +361,38 @@ def base_distance_algorithm(current_node, goals, graph):
 # 角度算法
 def angle_algorithm(current_node, goals, graph, prev_node):
     """平滑版方向概率算法"""
-    # 初始化历史记录
-    if not hasattr(angle_algorithm, "history"):
-        angle_algorithm.history = {
-            'move_vectors': deque(maxlen=3),  # 保存最近3个移动方向
-            'prev_weights': None
-        }
-    
-    # 初始状态处理
-    if not prev_node:
-        return [1.0/len(goals)] * len(goals)
-    
-    # 坐标转换
-    def hex_to_cartesian(node):
-        q, r, _ = node
-        x = q * np.sqrt(3) + r * np.sqrt(3)/2
-        y = r * 1.5
-        return np.array([x, y])
-    
-    # 获取当前移动向量
-    current_pos = hex_to_cartesian(current_node)
-    prev_pos = hex_to_cartesian(prev_node)
-    move_vector = current_pos - prev_pos
-    move_norm = np.linalg.norm(move_vector)
-    
-    # 平滑处理：使用3帧指数衰减平均
-    angle_algorithm.history['move_vectors'].append(move_vector)
-    weights = [0.5**i for i in range(len(angle_algorithm.history['move_vectors']))]
-    weights = np.array(weights[::-1])/sum(weights)  # 最近帧权重最大
-    smoothed_move = sum(vec*w for vec,w in zip(angle_algorithm.history['move_vectors'], weights))
-    
-    # 计算各目标权重
+    # 基础距离计算权重
     weights = []
+    distances = []
     for goal in goals:
-        goal_pos = hex_to_cartesian(goal)
-        target_vector = goal_pos - current_pos
-        target_norm = np.linalg.norm(target_vector)
-        
-        # 到达目标直接返回
-        if target_norm < 1e-6:
-            return [1.0 if g == goal else 0.0 for g in goals]
-        
-        # 计算平滑后的方向一致性
-        cos_sim = np.dot(smoothed_move, target_vector) / (np.linalg.norm(smoothed_move)*target_norm + 1e-6)
-        directional_weight = (cos_sim + 1) / 2  # 策略2
-        
-        # 添加距离衰减因子
-        distance = calculate_distance(graph, current_node, goal)
-        distance_weight = 1/(distance + 1)
-        
-        # 综合权重（可调比例）
-        total_weight = 0.7*directional_weight + 0.3*distance_weight
-        weights.append(total_weight)
+        try:
+            # 使用networkx的最短路径算法
+            distances.append(nx.shortest_path_length(graph, current_node, goal))
+        except nx.NetworkXNoPath:
+            distances.append(float('inf'))
+    for d in distances:
+        if d == float('inf'):
+            weights.append(0)
+        else:
+            # 加1防止除零，当d=0时（已到达目标）权重为1
+            weights.append(1/(d**2 + 1))
     
-    # 添加历史惯性（防止突变）
-    if angle_algorithm.history['prev_weights'] is not None:
-        weights = [0.3*old + 0.7*new for old,new in zip(angle_algorithm.history['prev_weights'], weights)]
-    angle_algorithm.history['prev_weights'] = weights
+    k = []
+    b = []
+    for i in range(len(goals)):
+        # 注意：np.cos用的是弧度
+        theta = np.deg2rad(cal_included_angle(goals[i]))
+        # if i == 0:
+        #     print(f"目标{goals[0]}的theta是：{theta}")
+        # if i == 1:
+        #     print(f"目标{goals[1]}的theta是：{theta}")
+            
+        k.append(0.6*np.cos(theta)**2 + 1.4*np.cos(theta) + 1)
+        b.append(k[i] * weights[i])
     
     # 归一化处理
-    total = max(sum(weights), 1e-10)
-    return [w/total for w in weights]
+    total = sum(b)
+    return [i/total for i in b]
 
 # 广度优先搜索计算最短距离
 def bfs_shortest_distance(graph, start):
@@ -438,27 +422,6 @@ def update(frame):
             'last_processed_frame': -1
         }
     
-    # 处理跳帧（填充缺失帧数据）
-    # current_frames = list(range(update.storage['last_processed_frame']+1, frame+1))
-    # for f in current_frames:
-    #     update.storage['x_values'].append(f)
-        # for algo in ['my_algo', 'base_dist', 'angle']:
-        #     # 获取当前算法记录列表
-        #     records = update.storage['prob_records'][algo]
-        #     # 始终追加新元素（None或最后值）
-        #     if len(records) != 0:
-        #         records.append(records[-1])
-
-
-    # while len(update.storage['prob_records'][algo]) < current_len:
-    #     update.storage['prob_records'][algo].append(None)
-    # while len(update.storage['prob_records'][algo]) > current_len:
-    #     update.storage['prob_records'][algo].pop()
-
-            
-            
-    
-    # 更新最后处理的帧号
     update.storage['last_processed_frame'] = frame
 
     # 全局变量声明
@@ -504,24 +467,19 @@ def update(frame):
             # print(f"last_position:{last_position}")
             path = a_star(graph, current_position, current_goal)
             # print(f"change_path:{path}")
-            try_num=0
-            if len(path)>1:
-              while last_position == path[1]:
-                  # a*回头 重新生成a*路径
-                  try_num+=1
-                  print(f"last_path:{path}")
-                  path = a_star(graph, current_position, current_goal)
-                  print(f"change_path:{path}")
-                  if try_num>10:
-                      print("a*必回头")
-                      break
+            # try_num=0
+            # if len(path)>1:
+            #   while last_position == path[1]:
+            #       # a*回头 重新生成a*路径
+            #       try_num+=1
+            #       print(f"last_path:{path}")
+            #       path = a_star(graph, current_position, current_goal)
+            #       print(f"change_path:{path}")
+            #       if try_num>10:
+            #           print("a*必回头")
+            #           break
 
-                  print("出现掉头情况，请及时修改")
-
-            # 处理掉头
-            # if last_position == path[1]:
-            #     path[1][0]+2
-            #     print("掉头情况")
+            #       print("出现掉头情况，请及时修改")
             path_index = 0
             # 如果目标点数大于 goal_num 则清空轨迹
             # if len(goals)>=goal_num:
@@ -537,16 +495,14 @@ def update(frame):
     if path_index < len(path) and path_index >= 0:
         global update_num
         update_num += 1
-
         current_node = path[path_index]
         trajectory.append(current_node)
         # 检查是否到达目标点
         if current_node in goals:
-            time.sleep(0.5)  # 添加500ms延迟
+            # time.sleep(0.5)  # 添加500ms延迟
             ax1.clear()
             ax3.clear()
             print(f"已到达目标点 {current_node}，轨迹已清空")
-
             # === 新增保存逻辑 ===
             global save_counter
             save_counter += 1
@@ -573,25 +529,33 @@ def update(frame):
                 'last_processed_frame': -1
             }
             update_num = 0
-
+            current_node = start
+            distance_record = {goal: [] for goal in goals}
+            path = [start]
+            path_index = 0
+        # if start == goals[0]:
+        #     print(f"出现错误：{start}")
         # 计算三种算法的概率
         # my_prob = float(calculate_probability(current_node, goals, graph, {g:[] for g in goals})[0])
         # 只要目标点1的概率
         my_prob = float(calculate_probability(current_node, goals, graph, distance_record)[0])
         base_prob = float(base_distance_algorithm(current_node, goals, graph)[0])
-        step_prob = float(angle_algorithm(current_node, goals, graph, prev_node)[0])
+        angles_prob = angle_algorithm(current_node, goals, graph, prev_node)
+        angle_prob = float(angles_prob[0])
+        # print(f"angle_prob:{angle_prob}")
+        # print(f"another_goal_prob:{float(angles_prob[1])}")
         prev_node = current_node
         
-        # 打印夹角
-        now_angle = cal_included_angle()
-        print(f"now_angle:{now_angle}")
+        # 只打印与目标一的夹角
+        now_angle = cal_included_angle(goals[0])
+        # print(f"now_angle:{now_angle}")
 
         # 更新当前帧的真实数据
         # 改为追加方式：
         update.storage['x_values'].append(update_num)
         update.storage['prob_records']['my_algo'].append(my_prob)
         update.storage['prob_records']['base_dist'].append(base_prob)
-        update.storage['prob_records']['angle'].append(step_prob)
+        update.storage['prob_records']['angle'].append(angle_prob)
 
         # 绘制小球和轨迹
         global last_position_list
