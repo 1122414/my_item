@@ -467,19 +467,19 @@ def update(frame):
             # print(f"last_position:{last_position}")
             path = a_star(graph, current_position, current_goal)
             # print(f"change_path:{path}")
-            # try_num=0
-            # if len(path)>1:
-            #   while last_position == path[1]:
-            #       # a*回头 重新生成a*路径
-            #       try_num+=1
-            #       print(f"last_path:{path}")
-            #       path = a_star(graph, current_position, current_goal)
-            #       print(f"change_path:{path}")
-            #       if try_num>10:
-            #           print("a*必回头")
-            #           break
+            try_num=0
+            if len(path)>1:
+              while last_position == path[1]:
+                  # a*回头 重新生成a*路径
+                  try_num+=1
+                  print(f"last_path:{path}")
+                  path = a_star(graph, current_position, current_goal)
+                  print(f"change_path:{path}")
+                  if try_num>10:
+                      print("a*必回头")
+                      break
 
-            #       print("出现掉头情况，请及时修改")
+                  print("出现掉头情况，请及时修改")
             path_index = 0
             # 如果目标点数大于 goal_num 则清空轨迹
             # if len(goals)>=goal_num:
@@ -547,7 +547,7 @@ def update(frame):
         prev_node = current_node
         
         # 只打印与目标一的夹角
-        now_angle = cal_included_angle(goals[0])
+        # now_angle = cal_included_angle(goals[0])
         # print(f"now_angle:{now_angle}")
 
         # 更新当前帧的真实数据
