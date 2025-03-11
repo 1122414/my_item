@@ -177,6 +177,20 @@ def cal_included_angle(now_goal):
     
     return round(angle, 2)  # 保留两位小数
 
+def draw_obstical():
+    # 绘制六边形网格
+    for node in grid:
+        color = 'white'
+        if node in [item for sublist in obstacles for item in sublist]:
+            color = 'gray'
+        if node == start:
+            color = 'blue'
+        if node in goals:
+            idx = goals.index(node)
+            color = ['yellow', 'green', 'red', 'purple', 'orange'][idx]
+        draw_hexagon(ax1, node[0], node[1], color)
+        draw_hexagon(ax3, node[0], node[1], color)
+
 # 生成六边形棋盘
 def generate_hexagonal_grid(size):
     grid = []
@@ -205,6 +219,25 @@ def generate_obstacles(grid, num_obstacles, obstacle_size):
         # 更新候选节点，排除已生成的障碍物区域
         candidate_nodes = [node for node in candidate_nodes if node not in obstacle]
     # print(f"目前的obstacles是:{obstacles}")
+    my_obstacles = []
+    my_obstacles.append((-5,5,0))
+    my_obstacles.append((5,-5,0))
+    my_obstacles.append((4,2,-6))
+    my_obstacles.append((5,-2,-3))
+    my_obstacles.append((-10,3,7))
+    my_obstacles.append((-10,5,5))
+    my_obstacles.append((-8,3,5))
+    
+    i = 0
+    for my_o in my_obstacles:
+        if my_o not in obstacles:
+            obstacles[i].append(my_o)
+            i += 1
+            if i==4 :
+                i=0
+            # for i in range(4):
+            #     obstacles[i].append(my_o)
+
     return obstacles
 
 # 给a*添加扰动
@@ -441,17 +474,7 @@ def update(frame):
     ax3.set_aspect('equal')
 
     # 绘制六边形网格
-    for node in grid:
-        color = 'white'
-        if node in [item for sublist in obstacles for item in sublist]:
-            color = 'gray'
-        if node == start:
-            color = 'blue'
-        if node in goals:
-            idx = goals.index(node)
-            color = ['yellow', 'green', 'red', 'purple', 'orange'][idx]
-        draw_hexagon(ax1, node[0], node[1], color)
-        draw_hexagon(ax3, node[0], node[1], color)
+    draw_obstical()
 
     # 每隔10秒重新选择目标点
     if frame % 10 == 0 and frame != 0:
@@ -533,6 +556,8 @@ def update(frame):
             distance_record = {goal: [] for goal in goals}
             path = [start]
             path_index = 0
+            global num_obstacles,obstacle_size
+            generate_obstacles(grid, num_obstacles, obstacle_size)
         # if start == goals[0]:
         #     print(f"出现错误：{start}")
         # 计算三种算法的概率
@@ -633,12 +658,17 @@ if __name__ == "__main__":
     # 定义起点和目标点
     start = (-size, 0, size)
 
+    
+    global num_obstacles,obstacle_size
+    num_obstacles = 4
+    obstacle_size = 2
+
     # 将地图变大、目标变多
     # goals = [(size, -size, 0), (0, size, -size),  (0, -size, size), (size, 0, -size), (-size, size, 0), ]  # 五个目标点 更改
     goals = [(size, -size, 0), (0, size, -size),   ]  # 五个目标点 更改
 
     grid = generate_hexagonal_grid(size)
-    obstacles = generate_obstacles(grid, 4, 2)
+    obstacles = generate_obstacles(grid, num_obstacles, obstacle_size)
 
     # 创建图并添加边
     graph = nx.Graph()
@@ -691,6 +721,7 @@ if __name__ == "__main__":
 
     global update_num
     update_num = -1
+
 
     recorded_frames = set()  # 用于跟踪已记录帧
     prev_node = None  # 添加历史节点追踪
