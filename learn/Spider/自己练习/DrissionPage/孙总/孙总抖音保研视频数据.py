@@ -1,11 +1,13 @@
 import os
 import re
 import json
+import time
 import whisper
 import requests
 import pandas as pd
 import subprocess
 import pymysql
+import torch
 from DrissionPage import ChromiumPage,ChromiumOptions
 from DrissionPage.common import By
 from DrissionPage.common import Keys
@@ -22,25 +24,26 @@ page = ChromiumPage(addr_or_opts=co)
 
 headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
-  'a': '6383',
-  'ch': '26',
-  'cr': '3',
-  'dr': '0',
-  'lr': 'all',
-  'cd': '0|0|0|3',
-  'cv': '1',
-  'br': '2247',
-  'bt': '2247',
-  'cs': '0',
-  'ds': '6',
-  'ft': 't2zLrtjjM95MxrKqoZmCE1RSYV58UMDtGsvHchyq8_45a',
-  'mime_type': 'video_mp4',
-  'qs': '0',
-  'rc': 'aWY4ZDQ0ZTZnOzU8ZGg6M0BpanY8N2c6ZnU4ZTMzNGkzM0A2NTBfXzEyXjYxYjIxX2EwYSNxYTBpcjQwa2NgLS1kLS9zcw==',
-  'btag': '80000e00028000',
-  'dy_q': '1742302005',
-  'l': '20250318204645C7110DCA7BEBD1359550',
-  '__vid': '7124233808735456548'
+  'referer':''
+  # 'a': '6383',
+  # 'ch': '26',
+  # 'cr': '3',
+  # 'dr': '0',
+  # 'lr': 'all',
+  # 'cd': '0|0|0|3',
+  # 'cv': '1',
+  # 'br': '341',
+  # 'bt': '341',
+  # 'cs': '2',
+  # 'ds': '3',
+  # 'ft': 't2zLrtjjM95MxrKqoZmCE1RSYV58UMDtGsvHchyq8_45a',
+  # 'mime_type': 'video_mp4',
+  # 'qs': '15',
+  # 'rc': 'NTg4Zjs3OjdkO2dpZjs0NEBpamQ7N3k5cjg1djMzNGkzM0BjYl5gYDNfXi4xY2JfLWIxYSM1aC4uMmRrYDRgLS1kLS9zcw==',
+  # 'btag': '80000e00028000',
+  # 'dy_q': '1742389319',
+  # 'l': '20250319210159C1262529F0A7F12302CC',
+  # '__vid': '7425915358181133579'
 }
 
 def extract_audio_from_videos(input_path, output_folder, file_name):
@@ -99,6 +102,7 @@ def get_text(save_path, text_title, model_size="large-v3"):
   print(f"加载 Whisper 模型: {model_size}...")
   model = whisper.load_model(model_size)
 
+  start_time = time.time()
   # 检查是否为音频文件
   if audio_address.endswith(('.wav', '.mp3', '.m4a', '.flac')):
       print(f"正在处理: {audio_address}")
@@ -118,6 +122,8 @@ def get_text(save_path, text_title, model_size="large-v3"):
       except Exception as e:
           print(f"处理失败: {audio_address}，错误信息: {e}")
   print("所有文件处理完成！")
+  end_time = time.time()
+  print(f"处理完成，耗时: {end_time - start_time:.2f}秒")
 
 def get_video_data(response,data):
   '''保存视频'''
@@ -198,7 +204,7 @@ def get_data():
     data_list = video_list[i].eles('x://*[@id="sliderVideo"]/div[1]/div[1]/div/div[1]/div[2]/div')
 
     favirate_number = convert_wan_to_number(data_list[1].text)
-    if favirate_number >= 20:
+    if favirate_number >= 2000:
       data['favirate']=favirate_number
       data['comment']=convert_wan_to_number(data_list[2].text)
       data['collect']=convert_wan_to_number(data_list[3].text)
@@ -227,24 +233,31 @@ def get_data():
       try:
         # 跳转到新页面
         new_page = page.new_tab(data['url'])
-        page.wait(WAIT_TIME)
+        page.wait(3)
+        # 点击暂停
+        new_page.actions.key_down(Keys.SPACE)
         # new_page = page.new_tab('https://v.douyin.com/OHUQczya840/')
         # 确认为新页面window
         # print(page.ele('x://*[@id="douyin-right-container"]/div[2]/div/div/div[1]/div[3]/div/div[2]/div[2]/span').text)
         now_tab = page.get_tab()
         video_data_url = new_page.ele('x://*[@id="douyin-right-container"]/div[2]/div/div/div[1]/div[2]/div/xg-video-container/video/source[1]').attr('src')
+        data['video_url'] = video_data_url
       except Exception as e:
          print(f'第{i}个视频无法下载，错误原因：{e}，没有下载地址')
-         page.wait(WAIT_TIME)
+         page.wait(3)
+         page.close_tabs(now_tab)
          scroll(video_list[i])
          continue
 
       # 保存视频
+      headers['referer'] = video_data_url
       response = requests.get(url=video_data_url, headers=headers, stream=True)
       if response.status_code == 200:
         get_video_data(response,data)
       else:
-        print(f"请求失败，状态码：{response.status_code}")
+        print(f"请求失败，状态码：{response.status_code}，video_data_url为：{video_data_url}")
+        page.close_tabs(now_tab)
+        scroll(video_list[i])
         continue
 
       page.close_tabs(now_tab)
@@ -255,7 +268,7 @@ def get_data():
       pd.DataFrame([data]).to_csv(file_path, mode='a', header=header, index=False)
     else:
       print(f'第{i}个视频点赞数小于2000，跳过')
-      page.wait(WAIT_TIME)
+      page.wait(3)
     scroll(video_list[i])
   print('爬取完成')
 
@@ -281,7 +294,8 @@ def spider():
   get_data()
 
 if __name__ == '__main__':
+  # 添加CUDA优化配置
+  torch.backends.cudnn.benchmark = True
+  torch.set_float32_matmul_precision('high')
   spider()
   
-
-
