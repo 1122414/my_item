@@ -8,20 +8,34 @@ import pandas as pd
 import subprocess
 import pymysql
 import torch
+import random
+from datetime import datetime
 from DrissionPage import ChromiumPage,ChromiumOptions
 from DrissionPage.common import By
 from DrissionPage.common import Keys
 
 WAIT_TIME = 10
 CRAWL_NUM = 1000
-INPUT_KEYS = '保研'
-
 current_path = os.path.dirname(os.path.abspath(__file__))
+
+file_path = os.path.join(current_path, '保研关键词.txt')
+random_key = []
+with open (file_path,'r',encoding='utf-8') as f:
+  for line in f.readlines():
+    random_key.append(line.strip())
+
+INPUT_KEYS = random_key[random.randint(0,len(random_key)-1)]
+# INPUT_KEYS = '保研自我介绍'
+print(f'当前关键词：{INPUT_KEYS}')
 
 # 命令行打开
 subprocess.Popen('"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9527 --user-data-dir="E:\selenium\AutomationProfile"')
 co = ChromiumOptions().set_local_port(9527)
 page = ChromiumPage(addr_or_opts=co)
+
+current_datetime = datetime.now()      # 获取当前日期和时间
+current_date = current_datetime.date() # 提取日期部分
+# print(current_date)  # 输出：YYYY-MM-DD
 
 headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
@@ -46,6 +60,29 @@ headers = {
   # 'l': '20250319210159C1262529F0A7F12302CC',
   # '__vid': '7425915358181133579'
 }
+
+def sanitize_filename(filename):
+    '''解决title不合规情况'''
+    # 定义不合规字符的正则表达式
+    invalid_chars_regex = r'[\"*<>?\\|/:,]'
+    # 替换不合规字符为空格
+    if invalid_chars_regex == '?':
+       sanitized_filename = re.sub(invalid_chars_regex, '？', filename)
+       return sanitized_filename
+    sanitized_filename = re.sub(invalid_chars_regex, ' ', filename)
+    return sanitized_filename
+
+def close_tab_and_scroll(now_tab,now_video):
+  '''关闭当前标签页并滚动页面'''
+  page.wait(3)
+  page.close_tabs(now_tab)
+  scroll(now_video)
+
+def write2csv(file_path,data):
+  '''当保存视频失败时将数据写入csv文件'''
+  header = not os.path.exists(file_path)  # 判断文件是否存在
+  pd.DataFrame([data]).to_csv(file_path, mode='a', header=header, index=False)
+  print(f'文件信息写入成功')
 
 def extract_audio_from_videos(input_path, output_folder, file_name):
     """
@@ -128,7 +165,7 @@ def get_text(save_path, text_title, model_size="large-v3"):
 
 def get_video_data(response,data):
   '''保存视频'''
-  text_title = data['title'][0:20]
+  text_title = sanitize_filename(data['title'][0:20])
   save_path = os.path.join(current_path,'video_data', f'{text_title}.mp4')
   with open(save_path, 'wb') as f:
     try:
@@ -171,6 +208,8 @@ def convert_wan_to_number(text):
       replace_match,
       text
   )
+  if converted_text == '赞':
+     converted_text = 0
   return int(converted_text)
 
 def scroll(now_video):
@@ -183,7 +222,8 @@ def get_data():
   dir_path = os.path.join(current_path,'data')
   if not os.path.exists(dir_path):
     os.mkdir(dir_path)
-  file_path = os.path.join(current_path,'data', 'douyin_data.csv')
+
+  file_path = os.path.join(current_path,'data', f'douyin_data{current_date}.csv')
   data = {
     'title': '',
     'favirate': 0,
@@ -198,6 +238,10 @@ def get_data():
   # //*[@id="sliderVideo"]/div[1]/div[1]/div/div[1]/div[2]/div[6]/div[2]/div/div/div/button[2]/div
   # 想爬取的条数
   for i in range(CRAWL_NUM):
+    # 这两个字段可能没有  所以每次清空
+    data['text']  =''
+    data['url'] = ''
+    data['video_url'] = ''
     # 点击暂停
     page.actions.key_down(Keys.SPACE)
 
@@ -205,12 +249,17 @@ def get_data():
     data_list = video_list[i].eles('x://*[@id="sliderVideo"]/div[1]/div[1]/div/div[1]/div[2]/div')
 
     favirate_number = convert_wan_to_number(data_list[1].text)
-    if favirate_number >= 2000:
+    comment_number = convert_wan_to_number(data_list[2].text)
+    collect_number = convert_wan_to_number(data_list[3].text)
+    transmit_number = convert_wan_to_number(data_list[5].text)
+    # 权重公式：点赞*0.8+评论*2+收藏*1.5+转发*1
+    weight = round(favirate_number*0.8+comment_number*2+collect_number*1.5+transmit_number*1,2)
+    print(f'第{i}个的权重为：{weight}')
+    if weight >= 2000:
       data['favirate']=favirate_number
-      data['comment']=convert_wan_to_number(data_list[2].text)
-      data['collect']=convert_wan_to_number(data_list[3].text)
-      
-      data['transmit']=convert_wan_to_number(data_list[5].text)
+      data['comment']=comment_number
+      data['collect']=collect_number
+      data['transmit']=transmit_number
       data['title']=video_list[i].ele('x://*[@id="video-info-wrap"]/div[1]/div[2]/div/div[1]/span//span').text
 
       # print(data['title'][0:20]+'.mp4')
@@ -255,11 +304,10 @@ def get_data():
         video_data_url = new_page.ele('x://*[@id="douyin-right-container"]/div[2]/div/div/div[1]/div[2]/div/xg-video-container/video/source[1]').attr('src')
         data['video_url'] = video_data_url
       except Exception as e:
-         print(f'第{i}个视频无法下载，错误原因：{e}，没有下载地址')
-         page.wait(3)
-         page.close_tabs(now_tab)
-         scroll(video_list[i])
-         continue
+        print(f'第{i}个视频无法下载，错误原因：{e}，没有下载地址')
+        write2csv(file_path, data)
+        close_tab_and_scroll(now_tab,video_list[i])
+        continue
 
       # 保存视频
       headers['referer'] = video_data_url
@@ -268,16 +316,15 @@ def get_data():
         get_video_data(response,data)
       else:
         print(f"请求失败，状态码：{response.status_code}，video_data_url为：{video_data_url}")
-        page.close_tabs(now_tab)
-        scroll(video_list[i])
+        write2csv(file_path, data)
+        close_tab_and_scroll(now_tab,video_list[i])
         continue
 
       page.close_tabs(now_tab)
 
       # data
       print(data)
-      header = not os.path.exists(file_path)  # 判断文件是否存在
-      pd.DataFrame([data]).to_csv(file_path, mode='a', header=header, index=False)
+      write2csv(file_path, data)
     else:
       print(f'第{i}个视频点赞数小于2000，跳过')
       page.wait(3)
