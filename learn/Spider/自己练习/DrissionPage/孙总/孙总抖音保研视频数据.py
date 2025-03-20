@@ -326,7 +326,7 @@ def get_data():
       print(data)
       write2csv(file_path, data)
     else:
-      print(f'第{i}个视频点赞数小于2000，跳过')
+      print(f'第{i}个视频权重小于2000，跳过')
       page.wait(3)
     scroll(video_list[i])
   print('爬取完成')
