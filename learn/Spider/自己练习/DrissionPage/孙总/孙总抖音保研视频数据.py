@@ -24,8 +24,8 @@ with open (file_path,'r',encoding='utf-8') as f:
   for line in f.readlines():
     random_key.append(line.strip())
 
-INPUT_KEYS = random_key[random.randint(0,len(random_key)-1)]
-# INPUT_KEYS = '保研自我介绍'
+# INPUT_KEYS = random_key[random.randint(0,len(random_key)-1)]
+INPUT_KEYS = '保研群面攻略'
 print(f'当前关键词：{INPUT_KEYS}')
 
 # 命令行打开
@@ -168,14 +168,22 @@ def get_video_data(response,data):
   text_title = sanitize_filename(data['title'][0:20])
   save_path = os.path.join(current_path,'video_data', f'{text_title}.mp4')
   with open(save_path, 'wb') as f:
+    # 分块写入
     try:
-      f.write(response.content)
+      with open(save_path, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=8192, decode_unicode=False):
+          if chunk:
+            f.write(chunk)
+      
+      # 完整性校验
+      if os.path.getsize(save_path) < 1024 * 100:  # 小于100KB视为无效
+        raise ValueError("文件过小可能不完整")
+      
       print(f"视频下载完成：{save_path}")
+      # 开始解析提取文案
+      data['text'] = get_text(save_path, text_title)
     except Exception as e:
       print(f"视频下载失败：{save_path}，错误信息：{e}")
-  # 开始解析提取文案
-  # output_folder = os.path.join(current_path, 'data', f'{data['text'][0:20]}.txt')
-  data['text'] = get_text(save_path,text_title)
 
 def extract_http_links(text):
   '''正则匹配http/https链接（支持含路径、参数的复杂URL）'''
@@ -208,8 +216,12 @@ def convert_wan_to_number(text):
       replace_match,
       text
   )
-  if converted_text == '赞':
-     converted_text = 0
+
+  try:
+    converted_text = int(converted_text)
+  except Exception as e:
+    converted_text = 0
+    
   return int(converted_text)
 
 def scroll(now_video):
