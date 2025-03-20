@@ -13,7 +13,8 @@ from DrissionPage.common import By
 from DrissionPage.common import Keys
 
 WAIT_TIME = 10
-CRAWL_NUM = 50
+CRAWL_NUM = 1000
+INPUT_KEYS = '保研'
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -212,6 +213,17 @@ def get_data():
       data['transmit']=convert_wan_to_number(data_list[5].text)
       data['title']=video_list[i].ele('x://*[@id="video-info-wrap"]/div[1]/div[2]/div/div[1]/span//span').text
 
+      # print(data['title'][0:20]+'.mp4')
+      if (data['title'][0:20]+'.mp4') in os.listdir(os.path.join(current_path,'video_data')):
+          page.wait(WAIT_TIME)
+          scroll(video_list[i])
+          print('该视频已存在')
+          continue
+      # for file_name in os.listdir('learn\Spider\自己练习\DrissionPage\孙总\video_data'):
+      #   if file_name == (data['title']+'.mp4'):
+          
+      #     is_have = 1
+      #     break
       # 悬浮一下才会出现url内容
       try:
         data_list[5].hover()
@@ -277,7 +289,8 @@ def spider():
   page.get('https://www.douyin.com/')
   # 怕要验证
   page.wait(WAIT_TIME)
-  page.ele('x://*[@id="douyin-header"]/div[1]/header/div/div/div[1]/div/div[2]/div/div[1]/input').input('保研')
+  # 搜索内容
+  page.ele('x://*[@id="douyin-header"]/div[1]/header/div/div/div[1]/div/div[2]/div/div[1]/input').input(INPUT_KEYS)
   page.wait(WAIT_TIME)
   page.ele('x://*[@id="douyin-header"]/div[1]/header/div/div/div[1]/div/div[2]/div/button').click()
   page.wait(WAIT_TIME)
