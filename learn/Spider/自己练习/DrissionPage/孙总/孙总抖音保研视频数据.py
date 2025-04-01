@@ -1,4 +1,4 @@
-import os
+﻿import os
 import re
 import json
 import time
@@ -24,13 +24,15 @@ with open (file_path,'r',encoding='utf-8') as f:
   for line in f.readlines():
     random_key.append(line.strip())
 
-# INPUT_KEYS = random_key[random.randint(0,len(random_key)-1)]
-INPUT_KEYS = '保研群面攻略'
+INPUT_KEYS = random_key[random.randint(0,len(random_key)-1)]
+# INPUT_KEYS = '保研群面攻略'
 print(f'当前关键词：{INPUT_KEYS}')
 
 # 命令行打开
 subprocess.Popen('"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9527 --user-data-dir="E:\selenium\AutomationProfile"')
 co = ChromiumOptions().set_local_port(9527)
+# co.incognito()  # 匿名模式
+# co.headless()  # 无头模式
 page = ChromiumPage(addr_or_opts=co)
 
 current_datetime = datetime.now()      # 获取当前日期和时间
@@ -60,6 +62,17 @@ headers = {
   # 'l': '20250319210159C1262529F0A7F12302CC',
   # '__vid': '7425915358181133579'
 }
+
+def after_search_click0():
+  '''搜索过内容之后，点击视频专栏，点击第一个视频'''
+  # 点击视频专栏  
+  page.ele('x://*[@id="search-content-area"]/div/div[1]/div[1]/div[1]/div/div/span[2]').click()
+  page.wait(WAIT_TIME)
+  # //*[@id="search-result-container"]/div[2]/ul
+  # 点击第一个视频
+  video_list = page.eles('x://*[@id="search-result-container"]/div[2]/ul/li')
+  video_list[0].click()
+  page.wait(3)
 
 def sanitize_filename(filename):
     '''解决title不合规情况'''
@@ -149,8 +162,8 @@ def get_text(save_path, text_title, model_size="large-v3"):
           result = model.transcribe(
             audio_address, 
             language="zh",        # 明确指定中文
-            fp16=False,           # CPU用户关闭FP16
-            initial_prompt="以下是关于大学保研的对话",  # 上下文提示
+            fp16=True,           # CPU用户关闭FP16
+            initial_prompt="以下是关于大学保研的对话,请帮我生成对应的文案",  # 上下文提示
             temperature=0.2,      # 降低随机性
             beam_size=5,           # 增强解码稳定性
             word_timestamps=True,  # 启用词语级时间戳
@@ -235,9 +248,11 @@ def get_data():
   if not os.path.exists(dir_path):
     os.mkdir(dir_path)
 
-  file_path = os.path.join(current_path,'data', f'douyin_data{current_date}.csv')
+  file_path = os.path.join(current_path,'data', f'douyin_data{current_date}_{INPUT_KEYS}.csv')
   data = {
     'title': '',
+    'u_name':'',
+    'publish_time':'',
     'favirate': 0,
     'comment': 0,
     'collect': 0,
@@ -258,14 +273,28 @@ def get_data():
     page.actions.key_down(Keys.SPACE)
 
     video_list = page.eles('x://*[@id="douyin-right-container"]/div[4]/div[4]/div/div/div/div')
-    data_list = video_list[i].eles('x://*[@id="sliderVideo"]/div[1]/div[1]/div/div[1]/div[2]/div')
+    try:
+      data_list = video_list[i].eles('x://*[@id="sliderVideo"]/div[1]/div[1]/div/div[1]/div[2]/div')
+    except Exception as e:
+      print(f'{INPUT_KEYS},关键字最后一个视频')
+      new_input_key=random_key[random.randint(0,len(random_key)-1)]
+      page.ele('x://*[@id="douyin-right-container"]/div[4]/div[2]/div[1]/div/div/input').input(new_input_key)
+      file_path = os.path.join(current_path,'data', f'douyin_data{current_date}_{new_input_key}.csv')
+      page.wait(WAIT_TIME)
+      page.ele('x://*[@id="douyin-right-container"]/div[4]/div[2]/div[1]/div/button').click()
+      page.wait(WAIT_TIME)
+      i = 0
+      after_search_click0()
+      video_list = page.eles('x://*[@id="douyin-right-container"]/div[4]/div[4]/div/div/div/div')
+      print(f'跳转到{new_input_key}关键字')
+      
 
     favirate_number = convert_wan_to_number(data_list[1].text)
     comment_number = convert_wan_to_number(data_list[2].text)
     collect_number = convert_wan_to_number(data_list[3].text)
     transmit_number = convert_wan_to_number(data_list[5].text)
-    # 权重公式：点赞*0.8+评论*2+收藏*1.5+转发*1
-    weight = round(favirate_number*0.8+comment_number*2+collect_number*1.5+transmit_number*1,2)
+    # 权重公式：点赞*0.9+评论*2+收藏*1.8+转发*1.5
+    weight = round(favirate_number*0.9+comment_number*2+collect_number*1.8+transmit_number*1.5,2)
     print(f'第{i}个的权重为：{weight}')
     if weight >= 2000:
       data['favirate']=favirate_number
@@ -273,6 +302,8 @@ def get_data():
       data['collect']=collect_number
       data['transmit']=transmit_number
       data['title']=video_list[i].ele('x://*[@id="video-info-wrap"]/div[1]/div[2]/div/div[1]/span//span').text
+      data['u_name']=video_list[i].ele('x://*[@id="video-info-wrap"]/div[1]/div[1]/div[1]').text
+      data['publish_time']=video_list[i].ele('x://*[@id="video-info-wrap"]/div[1]/div[1]/div[2]').text
 
       # print(data['title'][0:20]+'.mp4')
       if (data['title'][0:20]+'.mp4') in os.listdir(os.path.join(current_path,'video_data')):
@@ -354,14 +385,7 @@ def spider():
   page.ele('x://*[@id="douyin-header"]/div[1]/header/div/div/div[1]/div/div[2]/div/button').click()
   page.wait(WAIT_TIME)
 
-  # 点击视频专栏  
-  page.ele('x://*[@id="search-content-area"]/div/div[1]/div[1]/div[1]/div/div/span[2]').click()
-  page.wait(WAIT_TIME)
-  # //*[@id="search-result-container"]/div[2]/ul
-  # 点击第一个视频
-  video_list = page.eles('x://*[@id="search-result-container"]/div[2]/ul/li')
-  video_list[0].click()
-  page.wait(3)
+  after_search_click0()
   # 获取数据
   get_data()
 
