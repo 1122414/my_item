@@ -104,14 +104,29 @@ def get_page_number():
   # 每天第一次运行把前一次的最后一条数据放进去
   # 从哪一页退出从哪一页进  设置初始页数
   # region Description 从log里自动读取上次退出的页数
-  with open(log_file_name, 'r', encoding='utf-8') as f:
-    lines = f.readlines()
 
-  aim_log = ''
-  for i in reversed(lines):
-    if "目前是第" in i:
-      aim_log = i.split(' ')
-      break
+  def open_and_read_log(log_path):
+    with open(log_path, 'r', encoding='utf-8') as f:
+      lines = f.readlines()
+
+    aim_log = ''
+    for i in reversed(lines):
+      if "目前是第" in i:
+        aim_log = i.split(' ')
+        break
+
+    if aim_log == '':
+      return 0
+    return aim_log
+
+  log_lsit = os.listdir(log_path)
+  now_log_index = log_lsit.index(now_day+'.log')
+  aim_log = log_lsit[now_log_index-1]
+  aim_log_path = os.path.join(log_path, aim_log)
+
+  aim_log = open_and_read_log(log_file_name)
+  if aim_log == 0:
+    aim_log = open_and_read_log(aim_log_path)
 
   numbers = extract_numbers(aim_log[2])
   return numbers
@@ -155,7 +170,8 @@ def get_post_per_page(start_thread):
     wait_time = 1
     
     # 打印目前是第几页
-    now_page = page.ele('x://*[@id="content"]/div/div[4]/div/span[@class="pagination_current"]').text
+    # x://*[@id="content"]/div/div[4]/div/span[@class="pagination_current"]
+    now_page = page.ele('x://*[@id="content"]/div/div[5]/div/span').text
     print(f'目前是第{now_page}页')
     
     # 更新forum_url
