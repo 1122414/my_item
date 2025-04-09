@@ -16,6 +16,8 @@ import subprocess
 from DrissionPage.common import By
 from DrissionPage import ChromiumPage,ChromiumOptions
 
+WAIT_TIME = 5
+
 # 链接数据库
 conn = pymysql.connect(
             host='localhost',
@@ -101,36 +103,36 @@ page = ChromiumPage(addr_or_opts=co)
 def extract_numbers(s):
     return [int(num) for num in re.findall(r'\d+', s)]
 def get_page_number():
-  # 每天第一次运行把前一次的最后一条数据放进去
+  '''
+  自动获取上一次正常运行时的页数
+  注意：需有一个log：格式为目前是第xxx页的第xxx个帖子
+  '''
+  # 每天第一次运行把之前的最后一条数据放进去
   # 从哪一页退出从哪一页进  设置初始页数
   # region Description 从log里自动读取上次退出的页数
 
-  def open_and_read_log(log_path):
-    with open(log_path, 'r', encoding='utf-8') as f:
-      lines = f.readlines()
-
+  def open_and_read_log():
     aim_log = ''
-    for i in reversed(lines):
-      if "目前是第" in i:
-        aim_log = i.split(' ')
-        break
-
-    if aim_log == '':
-      return 0
-    return aim_log
-
+    for i in range(len(log_lsit)-1,0,-1):
+      now_path = os.path.join(log_path, log_lsit[i])
+      with open(now_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+      for i in reversed(lines):
+        if "目前是第" in i:
+          aim_log = i.split(' ')
+          return aim_log
+    aim_log = 0
   log_lsit = os.listdir(log_path)
-  now_log_index = log_lsit.index(now_day+'.log')
-  aim_log = log_lsit[now_log_index-1]
-  aim_log_path = os.path.join(log_path, aim_log)
+  # aim_log_index = get_aim_log_index(log_lsit)
+  # aim_log = log_lsit[aim_log_index]
+  # aim_log_path = os.path.join(log_path, aim_log)
 
-  aim_log = open_and_read_log(log_file_name)
-  if aim_log == 0:
-    aim_log = open_and_read_log(aim_log_path)
+  aim_log = open_and_read_log()
+  # if aim_log == 0:
+  #   aim_log = open_and_read_log(aim_log_path)
 
   numbers = extract_numbers(aim_log[2])
   return numbers
-  # print(numbers)
 # 通用
 def get_data_num():
   query = "SELECT COUNT(*) FROM Hack_forum_ultimate"
@@ -166,9 +168,6 @@ def get_forum_skin_data(tbody_tr_list):
 
 def get_post_per_page(start_thread):
   try:
-    # 等待时间
-    wait_time = 1
-    
     # 打印目前是第几页
     # x://*[@id="content"]/div/div[4]/div/span[@class="pagination_current"]
     now_page = page.ele('x://*[@id="content"]/div/div[5]/div/span').text
@@ -277,7 +276,7 @@ def get_post_per_page(start_thread):
       # 点击进入帖子
       try:
         thread_list[i].ele('x:.//div[@class="mobile-link-truncate"]//a').click() 
-        page.wait(wait_time)
+        page.wait(WAIT_TIME)
       except Exception as e:
         print(e,'进入帖子失败！173行')
         # 失败则进入下一个帖子
@@ -377,7 +376,7 @@ def get_post_per_page(start_thread):
 
             # 获取回复信息
             useful_data['user_post_content'] = post_list[i].ele('x:.//div[@class="post_body scaleimages"]').text
-            page.wait(wait_time)
+            page.wait(WAIT_TIME)
             # 写入数据库
             try:
                 sql = "INSERT INTO Hack_forum_ultimate(id,module,forum_thead,forum_thead_url,forum,forum_url,forum_threads,forum_posts,forum_last_post_thread,forum_last_post_time,forum_last_post_user,thread,thread_url,thread_user_name,thread_replies,thread_view,thread_last_post_time,thread_last_post_user,post_id,user_url,user_name,user_popularity,user_credibility,user_bytes,user_threads,user_posts,user_game_xp,user_post_content) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s)"
@@ -418,7 +417,7 @@ def get_post_per_page(start_thread):
             
         # 返回post页面
         page.get(useful_data['forum_url'])
-        page.wait(1)
+        page.wait(WAIT_TIME)
         
       except Exception as e:
         # 返回post页面
@@ -426,7 +425,7 @@ def get_post_per_page(start_thread):
           page.get(useful_data['forum_url'])
         except Exception as e:
           print(e,"返回post页面时出现错误！408行")
-        page.wait(wait_time)
+        page.wait(WAIT_TIME)
         print(e,"获取帖子相关回复时出现错误！315行")
   except Exception as e:
     print(e,"获取帖子相关回复时出现错误！416行")
@@ -448,7 +447,7 @@ def Hack_module():
     # 点击论坛链接
     page.ele('x://*[@id="cat_1_e"]/tr[2]/td[2]/div[1]/strong/a').click()
     # 等待跳转
-    page.wait(3)
+    page.wait(WAIT_TIME)
     # 获取论坛内容
   
     # region Description 方法一： 看论坛有多少页
@@ -488,7 +487,7 @@ def Hack_module():
           page.ele('text=Next »').click(by_js=False)
         else:
           break
-        page.wait(3)
+        page.wait(WAIT_TIME)
       except Exception as e:
         print(e,"最后一页！368行")
         break
