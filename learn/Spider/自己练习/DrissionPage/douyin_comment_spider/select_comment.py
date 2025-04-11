@@ -17,16 +17,7 @@ from DrissionPage.common import Keys
 WAIT_TIME = 10
 CRAWL_NUM = 1000
 current_path = os.path.dirname(os.path.abspath(__file__))
-
-file_path = os.path.join(current_path, '保研关键词.txt')
-random_key = []
-with open (file_path,'r',encoding='utf-8') as f:
-  for line in f.readlines():
-    random_key.append(line.strip())
-
-INPUT_KEYS = random_key[random.randint(0,len(random_key)-1)]
-# INPUT_KEYS = '保研群面攻略'
-print(f'当前关键词：{INPUT_KEYS}')
+INPUT_KEYS = 'AI造谣明星输十亿'
 
 # 命令行打开
 subprocess.Popen('"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9527 --user-data-dir="E:\selenium\AutomationProfile"')
@@ -41,26 +32,7 @@ current_date = current_datetime.date() # 提取日期部分
 
 headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
-  'referer':''
-  # 'a': '6383',
-  # 'ch': '26',
-  # 'cr': '3',
-  # 'dr': '0',
-  # 'lr': 'all',
-  # 'cd': '0|0|0|3',
-  # 'cv': '1',
-  # 'br': '341',
-  # 'bt': '341',
-  # 'cs': '2',
-  # 'ds': '3',
-  # 'ft': 't2zLrtjjM95MxrKqoZmCE1RSYV58UMDtGsvHchyq8_45a',
-  # 'mime_type': 'video_mp4',
-  # 'qs': '15',
-  # 'rc': 'NTg4Zjs3OjdkO2dpZjs0NEBpamQ7N3k5cjg1djMzNGkzM0BjYl5gYDNfXi4xY2JfLWIxYSM1aC4uMmRrYDRgLS1kLS9zcw==',
-  # 'btag': '80000e00028000',
-  # 'dy_q': '1742389319',
-  # 'l': '20250319210159C1262529F0A7F12302CC',
-  # '__vid': '7425915358181133579'
+  'referer':'https://www.douyin.com/'
 }
 
 def after_search_click0():
@@ -96,107 +68,6 @@ def write2csv(file_path,data):
   header = not os.path.exists(file_path)  # 判断文件是否存在
   pd.DataFrame([data]).to_csv(file_path, mode='a', header=header, index=False)
   print(f'文件信息写入成功')
-
-def extract_audio_from_videos(input_path, output_folder, file_name):
-    """
-    从指定文件夹中的视频文件提取音频，保存为相同文件名的音频文件。
-    
-    :param input_folder: 输入视频文件所在的文件夹路径。
-    :param output_folder: 输出音频文件保存的文件夹路径。
-    """
-    # 确保输出文件夹存在
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-    
-    # 检查是否为视频文件（可根据需要扩展）
-    if input_path.endswith(('.mp4', '.avi', '.mov', '.mkv')):
-        # 输出文件路径
-        output_file_name = os.path.splitext(file_name)[0] + ".wav"
-        output_file_path = os.path.join(output_folder, output_file_name)
-        
-        # 使用 ffmpeg 提取音频
-        try:
-            print(f"正在处理: {file_name}")
-            # 在 extract_audio_from_videos 函数中优化ffmpeg命令
-            command = [
-                "ffmpeg",
-                "-i", input_path,
-                "-ar", "16000",        # 采样率统一为16kHz
-                "-ac", "1",            # 单声道
-                "-af", "highpass=f=300,lowpass=f=3000",  # 过滤高低频噪声
-                output_file_path
-            ]
-            subprocess.run(command, check=True)
-            print(f"提取成功: {output_file_path}")
-            return output_file_path
-        except subprocess.CalledProcessError as e:
-            print(f"提取失败: {file_name}，错误信息: {e}")
-    print("所有文件处理完成！")
-
-def get_text(save_path, text_title, model_size="large-v3"):
-  '''解析获取文案'''
-  """
-    使用 Whisper 模型识别文件夹中的音频文件，并输出字幕文件到指定文件夹。
-
-    :param input_folder: 输入音频文件所在的文件夹路径。
-    :param output_folder: 输出字幕文件保存的文件夹路径。
-    :param model_size: Whisper 模型大小 (如 "tiny", "base", "small", "medium", "large")。
-  """
-    # 先从视频提取音频
-  audio_dir = os.path.join(current_path, 'data' ,'audio_data')
-  if not os.path.exists(audio_dir):
-      os.makedirs(audio_dir)
-  
-  audio_address =extract_audio_from_videos(save_path, audio_dir, text_title)
-
-  # 加载 Whisper 模型
-  print(f"加载 Whisper 模型: {model_size}...")
-  model = whisper.load_model(model_size)
-
-  start_time = time.time()
-  # 检查是否为音频文件
-  if audio_address.endswith(('.wav', '.mp3', '.m4a', '.flac')):
-      print(f"正在处理: {audio_address}")
-      try:
-          # 识别音频内容
-          result = model.transcribe(
-            audio_address, 
-            language="zh",        # 明确指定中文
-            fp16=True,           # CPU用户关闭FP16
-            initial_prompt="以下是关于大学保研的对话,请帮我生成对应的文案",  # 上下文提示
-            temperature=0.2,      # 降低随机性
-            beam_size=5,           # 增强解码稳定性
-            word_timestamps=True,  # 启用词语级时间戳
-            condition_on_previous_text=False  # 防止错误累积
-          )
-          return result["text"]
-      except Exception as e:
-          print(f"处理失败: {audio_address}，错误信息: {e}")
-  print("所有文件处理完成！")
-  end_time = time.time()
-  print(f"处理完成，耗时: {end_time - start_time:.2f}秒")
-
-def get_video_data(response,data):
-  '''保存视频'''
-  text_title = sanitize_filename(data['title'][0:20])
-  save_path = os.path.join(current_path,'video_data', f'{text_title}.mp4')
-  with open(save_path, 'wb') as f:
-    # 分块写入
-    try:
-      with open(save_path, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=8192, decode_unicode=False):
-          if chunk:
-            f.write(chunk)
-      
-      # 完整性校验
-      if os.path.getsize(save_path) < 1024 * 100:  # 小于100KB视为无效
-        raise ValueError("文件过小可能不完整")
-      
-      print(f"视频下载完成：{save_path}")
-      # 开始解析提取文案
-      data['text'] = get_text(save_path, text_title)
-    except Exception as e:
-      print(f"视频下载失败：{save_path}，错误信息：{e}")
 
 def extract_http_links(text):
   '''正则匹配http/https链接（支持含路径、参数的复杂URL）'''
@@ -258,7 +129,6 @@ def get_data():
     'collect': 0,
     'transmit': 0,
     'url':'',
-    'video_url': '',
     'text':''
   }
   # 视频列表
@@ -277,26 +147,15 @@ def get_data():
       data_list = video_list[i].eles('x://*[@id="sliderVideo"]/div[1]/div[1]/div/div[1]/div[2]/div')
     except Exception as e:
       print(f'{INPUT_KEYS},关键字最后一个视频')
-      new_input_key=random_key[random.randint(0,len(random_key)-1)]
-      page.ele('x://*[@id="douyin-right-container"]/div[4]/div[2]/div[1]/div/div/input').input(new_input_key)
-      file_path = os.path.join(current_path,'data', f'douyin_data{current_date}_{new_input_key}.csv')
-      page.wait(WAIT_TIME)
-      page.ele('x://*[@id="douyin-right-container"]/div[4]/div[2]/div[1]/div/button').click()
-      page.wait(WAIT_TIME)
-      i = 0
-      after_search_click0()
-      video_list = page.eles('x://*[@id="douyin-right-container"]/div[4]/div[4]/div/div/div/div')
-      print(f'跳转到{new_input_key}关键字')
-      
 
     favirate_number = convert_wan_to_number(data_list[1].text)
     comment_number = convert_wan_to_number(data_list[2].text)
     collect_number = convert_wan_to_number(data_list[3].text)
     transmit_number = convert_wan_to_number(data_list[5].text)
     # 权重公式：点赞*0.9+评论*2+收藏*1.8+转发*1.5
-    weight = round(favirate_number*0.9+comment_number*2+collect_number*1.8+transmit_number*1.5,2)
-    print(f'第{i}个的权重为：{weight}')
-    if weight >= 2000:
+    # weight = round(favirate_number*0.9+comment_number*2+collect_number*1.8+transmit_number*1.5,2)
+    print(f'第{i}个的comment数量为：{comment_number}')
+    if comment_number >= 50:
       data['favirate']=favirate_number
       data['comment']=comment_number
       data['collect']=collect_number
@@ -332,39 +191,6 @@ def get_data():
         page.wait(WAIT_TIME)
         scroll(video_list[i])
         continue
-
-      # 获取可下载视频url（注意：有些视频是不能去下载的）
-      try:
-        # 跳转到新页面
-        new_page = page.new_tab(data['url'])
-        page.wait(3)
-        # 点击暂停
-        new_page.actions.key_down(Keys.SPACE)
-        # new_page = page.new_tab('https://v.douyin.com/OHUQczya840/')
-        # 确认为新页面window
-        # print(page.ele('x://*[@id="douyin-right-container"]/div[2]/div/div/div[1]/div[3]/div/div[2]/div[2]/span').text)
-        now_tab = page.get_tab()
-        video_data_url = new_page.ele('x://*[@id="douyin-right-container"]/div[2]/div/div/div[1]/div[2]/div/xg-video-container/video/source[1]').attr('src')
-        data['video_url'] = video_data_url
-      except Exception as e:
-        print(f'第{i}个视频无法下载，错误原因：{e}，没有下载地址')
-        write2csv(file_path, data)
-        close_tab_and_scroll(now_tab,video_list[i])
-        continue
-
-      # 保存视频
-      headers['referer'] = video_data_url
-      response = requests.get(url=video_data_url, headers=headers, stream=True)
-      if response.status_code == 200:
-        get_video_data(response,data)
-      else:
-        print(f"请求失败，状态码：{response.status_code}，video_data_url为：{video_data_url}")
-        write2csv(file_path, data)
-        close_tab_and_scroll(now_tab,video_list[i])
-        continue
-
-      page.close_tabs(now_tab)
-
       # data
       print(data)
       write2csv(file_path, data)

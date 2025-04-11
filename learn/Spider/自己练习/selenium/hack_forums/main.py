@@ -11,12 +11,13 @@ import os
 import re
 import json
 import time
+import random
 import pymysql
 import subprocess
 from DrissionPage.common import By
 from DrissionPage import ChromiumPage,ChromiumOptions
 
-WAIT_TIME = 5
+WAIT_TIME = 3
 
 # 链接数据库
 conn = pymysql.connect(
@@ -31,7 +32,7 @@ conn = pymysql.connect(
 cursor = conn.cursor()
 #region Description 折叠注释 初始工作
 # 记录数据条数
-query = "SELECT COUNT(*) FROM Hack_forum_ultimate"
+query = "SELECT COUNT(*) FROM hack_data"
 cursor.execute(query)
 now_data_num = cursor.fetchone()[0]
 
@@ -39,40 +40,47 @@ data_num = int(now_data_num + 1)
 # 403判断
 is_FZT = False
 #定义单条json数据
-useful_data = {}
-useful_data['module'] = ''
-useful_data['forum_thead'] = ''
-useful_data['forum_thead_url'] = ''
-useful_data['forum'] = ''
-useful_data['forum_url'] = ''
-useful_data['forum_threads'] = ''
-useful_data['forum_posts'] = ''
-useful_data['forum_last_post_thread'] = ''
-useful_data['forum_last_post_time']=''
-useful_data['forum_last_post_user']=''
-useful_data['thread']=''
-useful_data['thread_url']=''
-useful_data['thread_user_name']=''
-useful_data['thread_replies']=''
-useful_data['thread_view']=''
-useful_data['thread_last_post_time']=''
-useful_data['thread_last_post_user']=''
-useful_data['post_id']=''
-useful_data['user_url']=''
-useful_data['user_name']=''
-# useful_data['user_last_seen']=''
-# useful_data['user_join_date']=''
-useful_data['user_popularity']=''
-useful_data['user_credibility']=''
-# useful_data['user_contracts_completed']=''
-# useful_data['user_open_disputes']=''
-useful_data['user_bytes']=''
-useful_data['user_threads']=''
-useful_data['user_posts']=''
-# useful_data['user_quick_loves']=''
-# useful_data['user_time_online']=''
-useful_data['user_game_xp']=''
-useful_data['user_post_content']=''
+useful_data = {
+  'module': '',
+  'forum_thead': '',
+  'module': '',
+  'forum_thead': '',
+  'forum_thead_url': '',
+  'forum': '',
+  'forum_url': '',
+  'forum_threads': '',
+  'forum_posts': '',
+  'forum_last_post_thread': '',
+  'forum_last_post_time':'',
+  'forum_last_post_user':'',
+  'thread':'',
+  'thread_url':'',
+  'thread_user_name':'',
+  'thread_replies':'',
+  'thread_view':'',
+  'thread_last_post_time':'',
+  'thread_last_post_user':'',
+  'post_id':'',
+  'user_url':'',
+  'user_name':'',
+  'user_popularity':'',
+  'user_credibility':'',
+  'user_bytes':'',
+  'user_threads':'',
+  'user_posts':'',
+  'user_game_xp':'',
+  'user_post_content':'',
+  'user_post_time':''
+}
+
+# 'user_last_seen'=''
+# 'user_join_date'=''
+# 'user_contracts_completed'=''
+# 'user_open_disputes'=''
+
+# 'user_quick_loves'=''
+# 'user_time_online']=''
+
 
 
 # 获取当前路径
@@ -94,6 +102,7 @@ subprocess.Popen('"C:\Program Files\Google\Chrome\Application\chrome.exe" --remo
 
 co = ChromiumOptions()
 co.set_local_port(9527)
+# co.headless(True)  加了显示找不到位置
 # co.headless()
 page = ChromiumPage(addr_or_opts=co)
 #endregion
@@ -135,11 +144,14 @@ def get_page_number():
   return numbers
 # 通用
 def get_data_num():
-  query = "SELECT COUNT(*) FROM Hack_forum_ultimate"
+  query = "SELECT COUNT(*) FROM hack_data"
   cursor.execute(query)
   return cursor.fetchone()[0]
 # 403 错误
 def FZTError():
+  '''
+  403 Forbidden！应对方法
+  '''
   print('403 Forbidden！')
   with open(log_file_name, 'a', encoding='utf-8') as f:
     f.write(f'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}: 403 Forbidden！----------目前已有{get_data_num()}条数据\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n')
@@ -167,11 +179,18 @@ def get_forum_skin_data(tbody_tr_list):
     print(e,'150行')
 
 def get_post_per_page(start_thread):
+  '''
+  获取每一页的帖子，以及每个帖子的回复
+  '''
   try:
     # 打印目前是第几页
     # x://*[@id="content"]/div/div[4]/div/span[@class="pagination_current"]
     now_page = page.ele('x://*[@id="content"]/div/div[5]/div/span').text
     print(f'目前是第{now_page}页')
+    # 每爬取一页加随机等待
+    ran_wait = random.randint(5,10)
+    page.wait(ran_wait)
+    print(f'等待{ran_wait}秒')
     
     # 更新forum_url
     useful_data['forum_url'] = page.url
@@ -241,7 +260,8 @@ def get_post_per_page(start_thread):
           useful_data['thread'] = ''
         # 拼接
         try:
-          useful_data['thread_url'] = 'https://hackforums.net/' + thread_list[i].ele('x:.//div[@class="mobile-link-truncate"]//a').attr('href')
+          # useful_data['thread_url'] = 'https://hackforums.net/' + thread_list[i].ele('x:.//div[@class="mobile-link-truncate"]//a').attr('href')
+          useful_data['thread_url'] = thread_list[i].ele('x:.//div[@class="mobile-link-truncate"]//a').attr('href')
         except Exception as e:
           useful_data['thread_url'] = ''
 
@@ -376,11 +396,12 @@ def get_post_per_page(start_thread):
 
             # 获取回复信息
             useful_data['user_post_content'] = post_list[i].ele('x:.//div[@class="post_body scaleimages"]').text
+            useful_data['user_post_time'] = post_list[i].ele('x:.//div[@class="post_head"]/span[@class="post_date"]').text
             page.wait(WAIT_TIME)
             # 写入数据库
             try:
-                sql = "INSERT INTO Hack_forum_ultimate(id,module,forum_thead,forum_thead_url,forum,forum_url,forum_threads,forum_posts,forum_last_post_thread,forum_last_post_time,forum_last_post_user,thread,thread_url,thread_user_name,thread_replies,thread_view,thread_last_post_time,thread_last_post_user,post_id,user_url,user_name,user_popularity,user_credibility,user_bytes,user_threads,user_posts,user_game_xp,user_post_content) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s)"
-                val = (data_num,useful_data['module'],useful_data['forum_thead'],useful_data['forum_thead_url'],useful_data['forum'],useful_data['forum_url'],useful_data['forum_threads'],useful_data['forum_posts'],useful_data['forum_last_post_thread'],useful_data['forum_last_post_time'],useful_data['forum_last_post_user'],useful_data['thread'],useful_data['thread_url'],useful_data['thread_user_name'],useful_data['thread_replies'],useful_data['thread_view'],useful_data['thread_last_post_time'],useful_data['thread_last_post_user'],useful_data['post_id'],useful_data['user_url'],useful_data['user_name'],useful_data['user_popularity'],useful_data['user_credibility'],useful_data['user_bytes'],useful_data['user_threads'],useful_data['user_posts'],useful_data['user_game_xp'],useful_data['user_post_content'])
+                sql = "INSERT INTO hack_data(id,module,forum_thead,forum_thead_url,forum,forum_url,forum_threads,forum_posts,forum_last_post_thread,forum_last_post_time,forum_last_post_user,thread,thread_url,thread_user_name,thread_replies,thread_view,thread_last_post_time,thread_last_post_user,post_id,user_url,user_name,user_popularity,user_credibility,user_bytes,user_threads,user_posts,user_game_xp,user_post_content,user_post_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                val = (data_num,useful_data['module'],useful_data['forum_thead'],useful_data['forum_thead_url'],useful_data['forum'],useful_data['forum_url'],useful_data['forum_threads'],useful_data['forum_posts'],useful_data['forum_last_post_thread'],useful_data['forum_last_post_time'],useful_data['forum_last_post_user'],useful_data['thread'],useful_data['thread_url'],useful_data['thread_user_name'],useful_data['thread_replies'],useful_data['thread_view'],useful_data['thread_last_post_time'],useful_data['thread_last_post_user'],useful_data['post_id'],useful_data['user_url'],useful_data['user_name'],useful_data['user_popularity'],useful_data['user_credibility'],useful_data['user_bytes'],useful_data['user_threads'],useful_data['user_posts'],useful_data['user_game_xp'],useful_data['user_post_content'],useful_data['user_post_time'])
                 cursor.execute(sql, val)
                 conn.commit()
                 data_num += 1
@@ -413,6 +434,7 @@ def get_post_per_page(start_thread):
           run_time = end_time - start_time
           # 强制退出
           if end_time - start_time > 1500:
+          
             break
             
         # 返回post页面
@@ -429,8 +451,8 @@ def get_post_per_page(start_thread):
         print(e,"获取帖子相关回复时出现错误！315行")
   except Exception as e:
     print(e,"获取帖子相关回复时出现错误！416行")
-  # start_thread = 0
-      
+  # start_thread = 0  
+
 def Hack_module():
   try:
     for k in useful_data:
@@ -478,9 +500,17 @@ def Hack_module():
     page.get(f'https://hackforums.net/forumdisplay.php?fid=2&page={want_page}')
     with open(log_file_name, 'a', encoding='utf-8') as f:
       f.write(f'在{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}程序开始时刻: 已有{get_data_num()}条数据\n')
-      
+    start_time = time.time()
     while 1:
       get_post_per_page(start_thread)
+      time.sleep(random.randint(5,10))
+      end_time = time.time()
+      run_time = end_time - start_time
+      # 连续运行时间大于两小时，暂停二十分钟
+      if(run_time > 7200):
+        start_time = end_time
+        page.wait(1200)
+
       try:
         # 看是否有下一页
         if page.ele('text=Next »'):
@@ -489,7 +519,7 @@ def Hack_module():
           break
         page.wait(WAIT_TIME)
       except Exception as e:
-        print(e,"最后一页！368行")
+        print(e,"最后一页！518行")
         break
       start_thread = 0
       
@@ -500,21 +530,26 @@ def Hack_module():
     print(e,'在485行')
   # tabmenu_45 = page.ele('#tabmenu_45')
   # useful_data['forum_thead']
+
 def Social_module():
   useful_data['module'] = 'Social'
 #   tabmenu_7
   pass
+
 def Tech_module():
   useful_data['module'] = 'Tech'
 #   tabmenu_53 tabmenu_151 tabmenu_88 tabmenu_141 tabmenu_156
   pass
+
 def Market_module():
   useful_data['module'] = 'Market'
   pass
+
 def Money_module():
   useful_data['module'] = 'Money'
 #   tabmenu_105
   pass
+
 def VIP_module():
   useful_data['module'] = 'VIP'
 #   tabmenu_241
@@ -548,5 +583,5 @@ if __name__ == '__main__':
       forum_content_list = page.eles('xpath://div[@class="forum-content"]/div')
       Hack_module()
     except Exception as e:
-      print(e,'536主函数内出错')
+      print(e,'582主函数内出错')
 
